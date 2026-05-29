@@ -3,56 +3,8 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { useReveal } from '@/lib/useReveal'
+import { stackTags, socialLinks, codeLines } from '@/lib/data/hero'
 
-// ─── DATA ─────────────────────────────────────────────────────
-const stackTags = [
-  { label: 'React',          active: true  },
-  { label: 'Next.js 14',     active: true  },
-  { label: 'TypeScript',     active: true  },
-  { label: 'Vue 3',          active: false },
-  { label: 'Angular 17+',    active: false },
-  { label: 'Three.js',       active: false },
-  { label: 'TanStack Query', active: false },
-  { label: 'Tailwind CSS',   active: false },
-]
-
-const socialLinks = [
-  { label: 'GitHub',   href: 'https://github.com/Kaycee-attah'        },
-  { label: 'LinkedIn', href: 'https://linkedin.com/in/kelechi-attah'  },
-  { label: 'Email',    href: 'mailto:attahkelechi97@gmail.com'        },
-]
-
-const codeLines = [
-  [
-    { text: 'const',       color: '#c084fc' },
-    { text: ' dev',        color: '#e5e7eb' },
-    { text: ' =',          color: '#67e8f9' },
-    { text: ' {',          color: '#67e8f9' },
-  ],
-  [
-    { text: '  role',      color: '#60a5fa' },
-    { text: ':',           color: '#67e8f9' },
-    { text: ' "Frontend"', color: '#86efac' },
-    { text: ',',           color: '#67e8f9' },
-  ],
-  [
-    { text: '  open',      color: '#60a5fa' },
-    { text: ':',           color: '#67e8f9' },
-    { text: ' true',       color: '#c084fc' },
-    { text: ',',           color: '#67e8f9' },
-  ],
-  [
-    { text: '  hire',      color: '#60a5fa' },
-    { text: ':',           color: '#67e8f9' },
-    { text: ' () =>',      color: '#67e8f9' },
-  ],
-  [
-    { text: "    \"Let's talk\"", color: '#86efac' },
-  ],
-  [
-    { text: '}',           color: '#67e8f9' },
-  ],
-]
 
 // ─── HERO COMPONENT ───────────────────────────────────────────
 export default function Hero() {
