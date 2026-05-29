@@ -1,0 +1,192 @@
+// ─── PROJECTS DATA ────────────────────────────────────────────
+// All project content lives here.
+// When the Admin panel is built, these will be fetched
+// from the database instead.
+
+export const featuredProjects = [
+  {
+    id: 'fuege',
+    number: '01',
+    name: 'Fuege — 3D Furniture Customizer',
+    type: 'Frontend · 3D · Payments',
+    stack: ['Vue 3', 'Three.js', 'Pinia', 'Flutterwave'],
+    liveUrl: 'https://fuege.netlify.app',
+    githubUrl: 'https://github.com/Kaycee-attah',
+    overview: {
+      title: 'Fuege',
+      subtitle: 'fuege.netlify.app · Vue 3 · Three.js · Flutterwave',
+      description:
+        'A real-time 3D furniture customizer where users swap materials and textures at 60fps, configure their piece, and pay via Flutterwave — all in the browser. The 3D model originally took 8 seconds to load. I got it to 1.2 seconds.',
+      metrics: [
+        { value: '60',   unit: 'fps', label: 'Texture swap'    },
+        { value: '1.2',  unit: 's',   label: 'Load time'       },
+        { value: '95',   unit: '+',   label: 'Lighthouse'      },
+        { value: '₦',    unit: '',    label: 'Naira payments'  },
+      ],
+    },
+    code: {
+      filename: 'useTextureSwap.js — Fuege',
+      lines: [
+        { tokens: [{ text: '// Real-time texture swapping at 60fps', color: '#374151' }] },
+        { tokens: [{ text: '// Caches textures to avoid re-fetching', color: '#374151' }] },
+        { tokens: [] },
+        { tokens: [{ text: 'const ', color: '#c084fc' }, { text: 'textureCache', color: '#e5e7eb' }, { text: ' = ', color: '#67e8f9' }, { text: 'new ', color: '#c084fc' }, { text: 'Map()', color: '#60a5fa' }] },
+        { tokens: [] },
+        { tokens: [{ text: 'export function ', color: '#c084fc' }, { text: 'useTextureSwap', color: '#60a5fa' }, { text: '(scene) {', color: '#67e8f9' }] },
+        { tokens: [{ text: '  const ', color: '#c084fc' }, { text: 'loader', color: '#e5e7eb' }, { text: ' = ', color: '#67e8f9' }, { text: 'new ', color: '#c084fc' }, { text: 'THREE.TextureLoader()', color: '#60a5fa' }] },
+        { tokens: [] },
+        { tokens: [{ text: '  async function ', color: '#c084fc' }, { text: 'swapTexture', color: '#60a5fa' }, { text: '(meshName, url) {', color: '#67e8f9' }] },
+        { tokens: [{ text: '    let ', color: '#c084fc' }, { text: 'texture', color: '#e5e7eb' }, { text: ' = ', color: '#67e8f9' }, { text: 'textureCache', color: '#e5e7eb' }, { text: '.get(url)', color: '#60a5fa' }] },
+        { tokens: [{ text: '    if ', color: '#c084fc' }, { text: '(!texture) {', color: '#67e8f9' }] },
+        { tokens: [{ text: '      texture', color: '#e5e7eb' }, { text: ' = ', color: '#67e8f9' }, { text: 'await ', color: '#c084fc' }, { text: 'loader', color: '#e5e7eb' }, { text: '.loadAsync(url)', color: '#60a5fa' }] },
+        { tokens: [{ text: '      textureCache', color: '#e5e7eb' }, { text: '.set(url, texture)', color: '#60a5fa' }] },
+        { tokens: [{ text: '    }', color: '#67e8f9' }] },
+        { tokens: [{ text: '    mesh', color: '#e5e7eb' }, { text: '.material.map', color: '#60a5fa' }, { text: ' = ', color: '#67e8f9' }, { text: 'texture', color: '#e5e7eb' }] },
+        { tokens: [{ text: '    mesh', color: '#e5e7eb' }, { text: '.material.needsUpdate', color: '#60a5fa' }, { text: ' = ', color: '#67e8f9' }, { text: 'true', color: '#c084fc' }] },
+        { tokens: [{ text: '  }', color: '#67e8f9' }] },
+        { tokens: [{ text: '  return ', color: '#c084fc' }, { text: '{ swapTexture }', color: '#67e8f9' }] },
+        { tokens: [{ text: '}', color: '#67e8f9' }] },
+      ],
+    },
+    challenges: {
+      problem: {
+        title: 'The problem',
+        text: 'The 3D furniture model was a single large GLTF file — 8 seconds to load on a standard connection. Every texture swap triggered a full re-fetch, causing visible lag and a broken experience.',
+        highlight: 'single large GLTF file',
+      },
+      solution: {
+        title: 'How I solved it',
+        text: 'I implemented lazy loading so only visible model parts load on initial render, and built a texture cache using a JavaScript Map so each texture URL is fetched once and reused. Load time dropped from 8s to 1.2s.',
+        highlight: 'texture cache using a JavaScript Map',
+      },
+    },
+    outcome: [
+      { label: 'Performance',   text: '95+ Lighthouse score across all devices. Load time reduced 85% through lazy loading and texture caching.' },
+      { label: 'Payments',      text: 'Full Flutterwave integration — cards, bank transfer, USSD — with Naira pricing for the Nigerian market.' },
+      { label: '3D Experience', text: '60fps real-time material and texture swapping on mid-range devices using Three.js and cached assets.' },
+      { label: 'Stack',         text: 'Vue 3 Composition API, Pinia for state, Three.js for rendering, deployed to Netlify with CI/CD.' },
+    ],
+  },
+  {
+    id: 'insighta',
+    number: '02',
+    name: 'Insighta Labs — Demographic API',
+    type: 'Backend · NLP · PostgreSQL',
+    stack: ['Node.js', 'Express', 'PostgreSQL', 'Railway'],
+    liveUrl: 'https://resourceful-eagerness-production-d7dd.up.railway.app',
+    githubUrl: 'https://github.com/Kaycee-attah/HNG_Internship_Backend_2026',
+    overview: {
+      title: 'Insighta Labs',
+      subtitle: 'Railway · Node.js · Express · PostgreSQL',
+      description:
+        'A production REST API with a custom NLP parser I wrote from scratch — no libraries — that maps plain English like "show me women over 30 in Lagos" directly to parameterised SQL. Built across 3 progressive stages for HNG.',
+      metrics: [
+        { value: '<500', unit: 'ms', label: 'Response time' },
+        { value: '80',   unit: '+',  label: 'Countries'     },
+        { value: '7',    unit: '',   label: 'SQL indexes'   },
+        { value: '100',  unit: '',   label: 'HNG grading'   },
+      ],
+    },
+    code: {
+      filename: 'nlpParser.js — Insighta Labs',
+      lines: [
+        { tokens: [{ text: '// Custom NLP parser — no external libraries', color: '#374151' }] },
+        { tokens: [{ text: '// Maps plain English to parameterised SQL', color: '#374151' }] },
+        { tokens: [] },
+        { tokens: [{ text: 'function ', color: '#c084fc' }, { text: 'parseQuery', color: '#60a5fa' }, { text: '(input) {', color: '#67e8f9' }] },
+        { tokens: [{ text: '  const ', color: '#c084fc' }, { text: 'filters', color: '#e5e7eb' }, { text: ' = {}', color: '#67e8f9' }] },
+        { tokens: [{ text: '  const ', color: '#c084fc' }, { text: 'text', color: '#e5e7eb' }, { text: ' = ', color: '#67e8f9' }, { text: 'input', color: '#e5e7eb' }, { text: '.toLowerCase()', color: '#60a5fa' }] },
+        { tokens: [] },
+        { tokens: [{ text: '  // Gender extraction', color: '#374151' }] },
+        { tokens: [{ text: '  if ', color: '#c084fc' }, { text: '(text', color: '#e5e7eb' }, { text: '.includes(', color: '#60a5fa' }, { text: "'women'", color: '#86efac' }, { text: '))', color: '#67e8f9' }] },
+        { tokens: [{ text: "    filters", color: '#e5e7eb' }, { text: '.gender', color: '#60a5fa' }, { text: ' = ', color: '#67e8f9' }, { text: "'female'", color: '#86efac' }] },
+        { tokens: [] },
+        { tokens: [{ text: '  // Age extraction', color: '#374151' }] },
+        { tokens: [{ text: '  const ', color: '#c084fc' }, { text: 'ageOver', color: '#e5e7eb' }, { text: ' = ', color: '#67e8f9' }, { text: 'text', color: '#e5e7eb' }, { text: '.match(', color: '#60a5fa' }, { text: '/over\\s+(\\d+)/', color: '#fca5a1' }, { text: ')', color: '#67e8f9' }] },
+        { tokens: [{ text: '  if ', color: '#c084fc' }, { text: '(ageOver)', color: '#e5e7eb' }, { text: ' filters', color: '#e5e7eb' }, { text: '.minAge', color: '#60a5fa' }, { text: ' = ', color: '#67e8f9' }, { text: 'parseInt', color: '#60a5fa' }, { text: '(ageOver[', color: '#67e8f9' }, { text: '1', color: '#fca5a1' }, { text: '])', color: '#67e8f9' }] },
+        { tokens: [] },
+        { tokens: [{ text: '  return ', color: '#c084fc' }, { text: 'filters', color: '#e5e7eb' }] },
+        { tokens: [{ text: '}', color: '#67e8f9' }] },
+      ],
+    },
+    challenges: {
+      problem: {
+        title: 'The problem',
+        text: 'The API needed to accept plain English queries like "show me women over 30 in Lagos". Every NLP library was too heavy, too expensive, or didn\'t handle Nigerian location names well.',
+        highlight: 'plain English queries',
+      },
+      solution: {
+        title: 'How I solved it',
+        text: 'I wrote a custom NLP parser from scratch using regex and keyword matching tailored to the query patterns needed. It handles 80+ countries, gender, age ranges, and 7 combinable filters — running in under 10ms.',
+        highlight: 'custom NLP parser from scratch',
+      },
+    },
+    outcome: [
+      { label: 'API Performance', text: 'Sub-500ms response times on Railway free tier with 2,026 seeded profiles and 7 PostgreSQL indexes.' },
+      { label: 'NLP Coverage',    text: 'Custom parser handles 80+ countries, gender, age ranges, and 7 combinable filter combinations.' },
+      { label: 'HNG Result',      text: '100/100 Stage 0 grading — all automated test criteria passed including pagination and filter accuracy.' },
+      { label: 'Architecture',    text: '3 progressive build stages — external API, full CRUD + PostgreSQL, advanced query engine with cursor pagination.' },
+    ],
+  },
+  {
+    id: 'hms',
+    number: '03',
+    name: 'Oneflare HMS',
+    type: 'Frontend · Enterprise · API',
+    stack: ['Next.js 14', 'TypeScript', 'TanStack Query', 'Axios'],
+    liveUrl: '#',
+    githubUrl: '#',
+    overview: {
+      title: 'Oneflare HMS',
+      subtitle: 'Production · Next.js 14 · TypeScript · TanStack Query',
+      description:
+        'A full hotel operations platform covering reservations, housekeeping, financials, and reporting. I built 11 live report pages, authored 30+ TanStack Query hooks, and architected a custom Axios wrapper used across the entire codebase.',
+      metrics: [
+        { value: '11',  unit: '',  label: 'Live report pages' },
+        { value: '30',  unit: '+', label: 'Query hooks'       },
+        { value: '9',   unit: '',  label: 'Modules built'     },
+        { value: '12',  unit: '+', label: 'Bugs resolved'     },
+      ],
+    },
+    code: {
+      filename: 'useReports.ts — Oneflare HMS',
+      lines: [
+        { tokens: [{ text: '// Reusable TanStack Query hook pattern', color: '#374151' }] },
+        { tokens: [{ text: '// Used across all 11 report pages', color: '#374151' }] },
+        { tokens: [] },
+        { tokens: [{ text: 'export function ', color: '#c084fc' }, { text: 'useOccupancyReport', color: '#60a5fa' }, { text: '(', color: '#67e8f9' }] },
+        { tokens: [{ text: '  filters', color: '#e5e7eb' }, { text: ': ', color: '#67e8f9' }, { text: 'ReportFilters', color: '#fca5a1' }] },
+        { tokens: [{ text: ') {', color: '#67e8f9' }] },
+        { tokens: [{ text: '  return ', color: '#c084fc' }, { text: 'useQuery', color: '#60a5fa' }, { text: '({', color: '#67e8f9' }] },
+        { tokens: [{ text: '    queryKey', color: '#60a5fa' }, { text: ': [', color: '#67e8f9' }, { text: 'REPORT_KEYS', color: '#e5e7eb' }, { text: '.OCCUPANCY,', color: '#60a5fa' }, { text: ' filters],', color: '#67e8f9' }] },
+        { tokens: [{ text: '    queryFn', color: '#60a5fa' }, { text: ': () =>', color: '#67e8f9' }] },
+        { tokens: [{ text: '      HotelAPI', color: '#e5e7eb' }, { text: '.get<', color: '#60a5fa' }, { text: 'OccupancyData', color: '#fca5a1' }, { text: '>(', color: '#67e8f9' }] },
+        { tokens: [{ text: "        '/reports/occupancy',", color: '#86efac' }] },
+        { tokens: [{ text: '        { params: filters }', color: '#67e8f9' }] },
+        { tokens: [{ text: '      ),', color: '#67e8f9' }] },
+        { tokens: [{ text: '    staleTime', color: '#60a5fa' }, { text: ': ', color: '#67e8f9' }, { text: '1000 * 60 * 5,', color: '#fca5a1' }] },
+        { tokens: [{ text: '    enabled', color: '#60a5fa' }, { text: ': !!', color: '#67e8f9' }, { text: 'filters', color: '#e5e7eb' }, { text: '.dateFrom,', color: '#60a5fa' }] },
+        { tokens: [{ text: '  })', color: '#67e8f9' }] },
+        { tokens: [{ text: '}', color: '#67e8f9' }] },
+      ],
+    },
+    challenges: {
+      problem: {
+        title: 'The problem',
+        text: "In the Warehouse module, users couldn't create a new stock item if no categories existed yet — but navigating away to create a category would lose all their form progress.",
+        highlight: 'lose all their form progress',
+      },
+      solution: {
+        title: 'How I solved it',
+        text: 'I built a stacked modal — a CreateCategoryModal that opens on top of the AddItemModal with proper z-index management. On save, it invalidates the categories query, auto-refreshes the dropdown, and auto-selects the new category.',
+        highlight: 'stacked modal',
+      },
+    },
+    outcome: [
+      { label: 'Scale',        text: '9 major modules — Reservations, Warehouse, Assets, Expenses, Housekeeping, Reports, Wallet, Roles, Staff.' },
+      { label: 'Architecture', text: 'Custom HotelAPI Axios wrapper, typed query key constants, standardised error handling across codebase.' },
+      { label: 'Data Layer',   text: '30+ TanStack Query hooks — CRUD, pagination, search, blob CSV exports, all following one consistent pattern.' },
+      { label: 'Reliability',  text: '12+ production bugs resolved — API mismatches, stale cache, missing UI, incorrect endpoint paths.' },
+    ],
+  },
+]

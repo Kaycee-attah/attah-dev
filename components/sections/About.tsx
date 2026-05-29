@@ -21,50 +21,17 @@ export default function About() {
     >
 
       {/* ── SECTION HEADER ───────────────────────────────────── */}
+      
       <div
         style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          marginBottom: '40px',
+            display: 'flex',
+            justifyContent: 'flex-end',
+            marginBottom: '40px',
         }}
-      >
-        <div>
-          {/* SECTION LABEL */}
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '12px',
-              marginBottom: '8px',
-            }}
-          >
-            <span
-              style={{
-                width: '32px',
-                height: '1px',
-                background: 'var(--amber)',
-                display: 'inline-block',
-              }}
-            />
-            <span
-              style={{
-                fontFamily: 'var(--font-mono)',
-                fontSize: '11px',
-                color: 'var(--amber)',
-                letterSpacing: '0.1em',
-                textTransform: 'uppercase',
-              }}
-            >
-              About
-            </span>
-          </div>
-        </div>
-
-        {/* FULL STORY LINK */}
+        >
         <Link
-          href="/about"
-          style={{
+            href="/about"
+            style={{
             display: 'flex',
             alignItems: 'center',
             gap: '6px',
@@ -78,9 +45,9 @@ export default function About() {
             background: 'var(--bg-surface)',
             textDecoration: 'none',
             transition: 'color var(--transition), border-color var(--transition)',
-          }}
+            }}
         >
-          Full story →
+            Full story →
         </Link>
       </div>
 
