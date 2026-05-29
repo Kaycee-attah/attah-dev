@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Plus_Jakarta_Sans, DM_Mono } from "next/font/google";
 import "./globals.css";
+import { ThemeProvider } from "@/components/providers/ThemeProvider";
+import Navbar from "@/components/layout/Navbar";
 
 const plusJakarta = Plus_Jakarta_Sans({
   variable: "--font-sans",
@@ -42,7 +44,12 @@ export default function RootLayout({
       lang="en"
       className={`${plusJakarta.variable} ${dmMono.variable} antialiased`}
     >
-      <body>{children}</body>
+      <body>
+        <ThemeProvider>
+          <Navbar />
+          {children}
+        </ThemeProvider>
+      </body>
     </html>
   );
 }

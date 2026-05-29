@@ -168,3 +168,20 @@ h1, h2, h3, h4, h5, h6 {
   background: var(--green);
   animation: pulse-dot 2s ease-in-out infinite;
 }
+
+/* ─── NAVBAR RESPONSIVE ──────────────────────────────────── */
+.desktop-nav {
+  display: flex;
+}
+.mobile-menu-btn {
+  display: none !important;
+}
+
+@media (max-width: 768px) {
+  .desktop-nav {
+    display: none !important;
+  }
+  .mobile-menu-btn {
+    display: flex !important;
+  }
+}
