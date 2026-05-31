@@ -328,3 +328,16 @@ h1, h2, h3, h4, h5, h6 {
     grid-template-columns: 1fr !important;
   }
 }
+
+/* ─── ABOUT PAGE RESPONSIVE ─────────────────────────────── */
+@media (max-width: 768px) {
+  .about-hero-grid {
+    grid-template-columns: 1fr !important;
+  }
+  .about-hero-right {
+    display: none !important;
+  }
+  .about-body-grid {
+    grid-template-columns: 1fr !important;
+  }
+}

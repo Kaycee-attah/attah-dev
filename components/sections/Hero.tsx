@@ -2,7 +2,7 @@
 
 import Image from 'next/image'
 import Link from 'next/link'
-import { stackTags, socialLinks, codeLines } from '@/lib/data/hero'
+import { stackTags, socialLinks, codeLines, heroData } from '@/lib/data/hero'
 import { useFadeUp, useStaggerAnimation } from '@/lib/useGSAP'
 
 
@@ -189,8 +189,8 @@ export default function Hero() {
             }}
           >
             <Image
-              src="/images/kelechi.jpeg"
-              alt="Attah Kelechi — Frontend Developer"
+              src={heroData.photoPath}
+              alt={heroData.photoAlt}
               fill
               style={{
                 objectFit: 'cover',

@@ -15,7 +15,7 @@ export const heroData = {
     'fast, accessible, production-grade interfaces',
   location: 'Osun, Nigeria · Open to remote · NYSC PPA',
   cvPath: '/cv/attah-kelechi-cv.pdf',
-  photoPath: '/images/kelechi.jpg',
+  photoPath: '/images/kelechi.jpeg',
   photoAlt: 'Attah Kelechi — Frontend Developer',
 }
 
