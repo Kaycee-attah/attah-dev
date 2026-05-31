@@ -292,3 +292,13 @@ h1, h2, h3, h4, h5, h6 {
     grid-template-columns: 1fr !important;
   }
 }
+
+/* ─── SKILLS RESPONSIVE ──────────────────────────────────── */
+@media (max-width: 768px) {
+  .skills-grid {
+    grid-template-columns: 1fr !important;
+  }
+  .skills-featured {
+    grid-column: span 1 !important;
+  }
+}
