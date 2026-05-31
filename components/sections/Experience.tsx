@@ -10,8 +10,6 @@ export default function Experience() {
   const pairRefs = useRef<(HTMLDivElement | null)[]>([])
 
   useEffect(() => {
-  let lastScrollY = window.scrollY
-
   const observers: IntersectionObserver[] = []
 
   pairRefs.current.forEach((el, index) => {
@@ -20,17 +18,24 @@ export default function Experience() {
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
-          const scrollingDown = window.scrollY >= lastScrollY
-          lastScrollY = window.scrollY
-
           if (entry.isIntersecting) {
-            // Scrolling down — add this pair
-            setVisiblePairs((prev) =>
-              prev.includes(index) ? prev : [...prev, index]
-            )
+            // Scrolling down — reveal this pair and all before it
+            setVisiblePairs((prev) => {
+              const next = new Set(prev)
+              for (let i = 0; i <= index; i++) next.add(i)
+              return Array.from(next)
+            })
           } else {
-            // Scrolling up — remove this pair and everything after it
-            if (!scrollingDown) {
+            // Element left viewport — check if it left from the top
+            // (meaning user scrolled UP past it)
+            const rect = entry.boundingClientRect
+            const isAboveViewport = rect.bottom < 0
+
+            if (isAboveViewport) {
+              // Left from top — keep it visible (already scrolled past)
+            } else {
+              // Left from bottom — user scrolled UP, remove this
+              // pair and everything after it
               setVisiblePairs((prev) =>
                 prev.filter((i) => i < index)
               )

@@ -1,18 +1,29 @@
 'use client'
 
 import Link from 'next/link'
-import { useReveal } from '@/lib/useReveal'
+import { useFadeUp, useStaggerAnimation } from '@/lib/useGSAP'
 import { storyBeats, numbers, currentStatus, interestTags } from '@/lib/data/about'
 
 
 // ─── ABOUT COMPONENT ──────────────────────────────────────────
 export default function About() {
-  const ref = useReveal()
+  const ref = useFadeUp({ y: 32, duration: 0.7 })
+    const storyRef = useStaggerAnimation(
+    '.story-beat',
+    { opacity: 0, x: -24 },
+    { opacity: 1, x: 0, duration: 0.9, ease: 'power2.out', stagger: 0.12 },
+    { start: 'top 85%' }
+    )
+    const numbersRef = useStaggerAnimation(
+    '.number-card',
+    { opacity: 0, y: 20, scale: 0.95 },
+    { opacity: 1, y: 0, scale: 1, duration: 1.3, ease: 'back.out(1.4)', stagger: 0.1 },
+    { start: 'top 85%' }
+    )
 
   return (
     <section
       ref={ref}
-      className="reveal"
       style={{
         maxWidth: '1200px',
         margin: '0 auto',
@@ -95,6 +106,7 @@ export default function About() {
 
           {/* STORY BEATS */}
           <div
+            ref={storyRef}
             style={{
               display: 'flex',
               flexDirection: 'column',
@@ -105,6 +117,7 @@ export default function About() {
             {storyBeats.map((beat) => (
               <div
                 key={beat.id}
+                className="story-beat"
                 style={{
                   display: 'flex',
                   gap: '14px',
@@ -189,6 +202,7 @@ export default function About() {
 
           {/* NUMBER CARDS GRID */}
           <div
+            ref={numbersRef}
             style={{
               display: 'grid',
               gridTemplateColumns: '1fr 1fr',
@@ -198,6 +212,7 @@ export default function About() {
             {numbers.map((item) => (
               <div
                 key={item.label}
+                className="number-card"
                 style={{
                   padding: '16px',
                   background: 'var(--bg-surface)',

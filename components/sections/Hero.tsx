@@ -2,18 +2,23 @@
 
 import Image from 'next/image'
 import Link from 'next/link'
-import { useReveal } from '@/lib/useReveal'
 import { stackTags, socialLinks, codeLines } from '@/lib/data/hero'
+import { useFadeUp, useStaggerAnimation } from '@/lib/useGSAP'
 
 
 // ─── HERO COMPONENT ───────────────────────────────────────────
 export default function Hero() {
-  const ref = useReveal()
+  const sectionRef = useFadeUp({ y: 40, duration: 3.0 })
+    const stackRef = useStaggerAnimation(
+    '.skill-tag',
+    { opacity: 0, y: 16 },
+    { opacity: 1, y: 0, duration: 0.4, ease: 'power2.out', stagger: 0.3 },
+    { start: 'top 90%' }
+    )
 
   return (
     <section
-      ref={ref}
-      className="reveal"
+      ref={sectionRef}
       style={{
         maxWidth: '1200px',
         margin: '0 auto',
@@ -309,6 +314,7 @@ export default function Hero() {
 
         {/* STACK TAGS */}
         <div
+          ref={stackRef}
           style={{
             display: 'flex',
             gap: '7px',

@@ -1,15 +1,23 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import { useReveal } from '@/lib/useReveal'
+import { gsap } from 'gsap'
+import { ScrollTrigger } from 'gsap/ScrollTrigger'
+import { useFadeUp } from '@/lib/useGSAP'
 import { achievements, achievementsData } from '@/lib/data/achievements'
+
+gsap.registerPlugin(ScrollTrigger)
 
 // ─── COUNT UP HOOK ────────────────────────────────────────────
 function useCountUp(target: number, duration: number, start: boolean) {
   const [count, setCount] = useState(0)
+  const frameRef = useRef<number>(0)
 
   useEffect(() => {
-    if (!start) return
+    if (!start) {
+      setCount(0)
+      return
+    }
 
     const isDecimal = target % 1 !== 0
     const startTime = performance.now()
@@ -17,18 +25,24 @@ function useCountUp(target: number, duration: number, start: boolean) {
     const tick = (now: number) => {
       const elapsed = now - startTime
       const progress = Math.min(elapsed / duration, 1)
-      // Ease out cubic — fast start, slow finish
       const eased = 1 - Math.pow(1 - progress, 3)
       const current = eased * target
-      setCount(isDecimal
-        ? Math.round(current * 100) / 100
-        : Math.floor(current)
+      setCount(
+        isDecimal
+          ? Math.round(current * 100) / 100
+          : Math.floor(current)
       )
-      if (progress < 1) requestAnimationFrame(tick)
-      else setCount(target)
+      if (progress < 1) {
+        frameRef.current = requestAnimationFrame(tick)
+      } else {
+        setCount(target)
+      }
     }
 
-    requestAnimationFrame(tick)
+    frameRef.current = requestAnimationFrame(tick)
+    return () => {
+      if (frameRef.current) cancelAnimationFrame(frameRef.current)
+    }
   }, [start, target, duration])
 
   return count
@@ -37,31 +51,22 @@ function useCountUp(target: number, duration: number, start: boolean) {
 // ─── ACHIEVEMENT CARD ─────────────────────────────────────────
 function AchievementCard({
   achievement,
-  index,
   isVisible,
 }: {
   achievement: typeof achievements[0]
-  index: number
   isVisible: boolean
 }) {
-  const count = useCountUp(
-    achievement.number,
-    1800,
-    isVisible
-  )
-
+  const count = useCountUp(achievement.number, 1800, isVisible)
   const isDecimal = achievement.number % 1 !== 0
 
   return (
     <div
+      className="achievement-card"
       style={{
         background: 'var(--bg-surface)',
         border: '0.5px solid var(--border)',
         borderRadius: '12px',
         padding: '20px',
-        opacity: isVisible ? 1 : 0,
-        transform: isVisible ? 'translateY(0)' : 'translateY(16px)',
-        transition: `opacity 0.5s ease ${index * 0.08}s, transform 0.5s ease ${index * 0.08}s`,
         position: 'relative',
         overflow: 'hidden',
       }}
@@ -126,14 +131,13 @@ function AchievementCard({
       >
         {achievement.sub}
       </p>
-
     </div>
   )
 }
 
 // ─── ACHIEVEMENTS COMPONENT ───────────────────────────────────
 export default function Achievements() {
-  const sectionRef = useReveal()
+  const sectionRef = useFadeUp({ y: 32, duration: 0.7 })
   const gridRef = useRef<HTMLDivElement>(null)
   const [isVisible, setIsVisible] = useState(false)
 
@@ -141,34 +145,51 @@ export default function Achievements() {
     const el = gridRef.current
     if (!el) return
 
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            setIsVisible(true)
-            observer.unobserve(entry.target)
-          }
-        })
-      },
-      { threshold: 0.15 }
-    )
+    const ctx = gsap.context(() => {
+      // Stagger cards in
+      gsap.fromTo(
+        el.querySelectorAll('.achievement-card'),
+        { opacity: 0, y: 20, scale: 0.96 },
+        {
+          opacity: 1,
+          y: 0,
+          scale: 1,
+          duration: 0.5,
+          ease: 'back.out(1.2)',
+          stagger: 0.07,
+          scrollTrigger: {
+            trigger: el,
+            start: 'top 85%',
+            end: 'bottom 20%',
+            toggleActions: 'play reverse play reverse',
+            // Trigger count up when section enters
+            onEnter: () => {
+              setIsVisible(false)
+              setTimeout(() => setIsVisible(true), 50)
+            },
+            onEnterBack: () => {
+              setIsVisible(false)
+              setTimeout(() => setIsVisible(true), 50)
+            },
+            onLeave: () => setIsVisible(false),
+            onLeaveBack: () => setIsVisible(false),
+          },
+        }
+      )
+    }, el)
 
-    observer.observe(el)
-    return () => observer.disconnect()
+    return () => ctx.revert()
   }, [])
 
   return (
     <section
       ref={sectionRef}
-      className="reveal"
       style={{
         maxWidth: '1200px',
         margin: '0 auto',
         padding: '80px 24px',
       }}
     >
-
-      {/* ── HEADING ──────────────────────────────────────────── */}
       <div style={{ marginBottom: '40px' }}>
         <h2
           style={{
@@ -192,7 +213,6 @@ export default function Achievements() {
         </h2>
       </div>
 
-      {/* ── GRID ─────────────────────────────────────────────── */}
       <div
         ref={gridRef}
         style={{
@@ -202,16 +222,14 @@ export default function Achievements() {
         }}
         className="achievements-grid"
       >
-        {achievements.map((achievement, index) => (
+        {achievements.map((achievement) => (
           <AchievementCard
             key={achievement.id}
             achievement={achievement}
-            index={index}
             isVisible={isVisible}
           />
         ))}
       </div>
-
     </section>
   )
 }

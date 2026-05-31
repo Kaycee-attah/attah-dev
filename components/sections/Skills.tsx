@@ -1,15 +1,20 @@
 'use client'
 
-import { useReveal } from '@/lib/useReveal'
+import { useFadeUp, useStaggerAnimation } from '@/lib/useGSAP'
 import { skillGroups, skillsData } from '@/lib/data/skills'
 
 export default function Skills() {
-  const ref = useReveal()
+  const ref = useFadeUp({ y: 32, duration: 0.7 })
+  const gridRef = useStaggerAnimation(
+    '.skill-card',
+    { opacity: 0, y: 24 },
+    { opacity: 1, y: 0, duration: 1.3, ease: 'power2.out', stagger: 0.8 },
+    { start: 'top 85%' }
+  )
 
   return (
     <section
       ref={ref}
-      className="reveal"
       style={{
         maxWidth: '1200px',
         margin: '0 auto',
@@ -43,6 +48,7 @@ export default function Skills() {
 
       {/* ── BENTO GRID ───────────────────────────────────────── */}
       <div
+        ref={gridRef}
         style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(4, 1fr)',
@@ -53,6 +59,7 @@ export default function Skills() {
         {skillGroups.map((group, groupIndex) => (
           <div
             key={group.id}
+            className="skill-card"
             style={{
               background: 'var(--bg-surface)',
               border: '0.5px solid var(--border)',
@@ -61,7 +68,6 @@ export default function Skills() {
               // First group spans 2 columns — featured
               gridColumn: groupIndex === 0 ? 'span 2' : 'span 1',
             }}
-            className={groupIndex === 0 ? 'skills-featured' : ''}
           >
 
             {/* CARD HEADER */}

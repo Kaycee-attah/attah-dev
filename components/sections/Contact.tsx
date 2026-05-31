@@ -1,8 +1,11 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
+import { gsap } from 'gsap'
+import { ScrollTrigger } from 'gsap/ScrollTrigger'
+import { useFadeUp } from '@/lib/useGSAP'
 import Link from 'next/link'
-import { useReveal } from '@/lib/useReveal'
+
 import {
   contactData,
   reasonPills,
@@ -12,7 +15,91 @@ import {
 } from '@/lib/data/contact'
 
 export default function Contact() {
-  const ref = useReveal()
+  const ref = useFadeUp({ y: 32, duration: 1.4 })
+  const formRef = useRef<HTMLDivElement>(null)
+  const rightRef = useRef<HTMLDivElement>(null)
+
+    useEffect(() => {
+    const form = formRef.current
+    const right = rightRef.current
+    if (!form || !right) return
+
+    const ctx = gsap.context(() => {
+
+        // Heading fades up first
+        gsap.fromTo(
+        '.contact-heading',
+        { opacity: 0, y: 24 },
+        {
+            opacity: 1, y: 0,
+            duration: 0.6,
+            ease: 'power2.out',
+            scrollTrigger: {
+            trigger: form,
+            start: 'top 88%',
+            toggleActions: 'play reverse play reverse',
+            },
+        }
+        )
+
+        // Reason pills stagger in
+        gsap.fromTo(
+        '.reason-pill',
+        { opacity: 0, scale: 0.9 },
+        {
+            opacity: 1, scale: 1,
+            duration: 0.4,
+            ease: 'back.out(1.4)',
+            stagger: 0.07,
+            delay: 0.2,
+            scrollTrigger: {
+            trigger: form,
+            start: 'top 88%',
+            toggleActions: 'play reverse play reverse',
+            },
+        }
+        )
+
+        // Form slides in from left
+        gsap.fromTo(
+        form,
+        { opacity: 0, x: -32 },
+        {
+            opacity: 1, x: 0,
+            duration: 0.7,
+            ease: 'power2.out',
+            delay: 0.15,
+            scrollTrigger: {
+            trigger: form,
+            start: 'top 85%',
+            toggleActions: 'play reverse play reverse',
+            },
+        }
+        )
+
+        // Right side cards stagger in from right
+        const cards = right.querySelectorAll('.contact-card')
+        gsap.fromTo(
+        cards,
+        { opacity: 0, x: 32 },
+        {
+            opacity: 1, x: 0,
+            duration: 0.5,
+            ease: 'power2.out',
+            stagger: 0.1,
+            delay: 0.25,
+            scrollTrigger: {
+            trigger: right,
+            start: 'top 85%',
+            toggleActions: 'play reverse play reverse',
+            },
+        }
+        )
+
+    })
+
+    return () => ctx.revert()
+    }, [])
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -42,7 +129,6 @@ export default function Contact() {
   return (
     <section
       ref={ref}
-      className="reveal"
       style={{
         maxWidth: '1200px',
         margin: '0 auto',
@@ -52,7 +138,8 @@ export default function Contact() {
 
       {/* ── HEADER ───────────────────────────────────────────── */}
       <div style={{ marginBottom: '40px' }}>
-        <h2
+        <h2 
+          className="contact-heading"
           style={{
             fontSize: 'clamp(28px, 4vw, 36px)',
             fontWeight: 800,
@@ -91,6 +178,7 @@ export default function Contact() {
           {reasonPills.map((pill) => (
             <div
               key={pill.label}
+              className="reason-pill"
               style={{
                 display: 'flex',
                 alignItems: 'center',
@@ -130,16 +218,16 @@ export default function Contact() {
       {/* ── MAIN LAYOUT ──────────────────────────────────────── */}
       <div
         style={{
-          display: 'grid',
-          gridTemplateColumns: '1fr 320px',
-          gap: '32px',
-          alignItems: 'start',
+            display: 'grid',
+            gridTemplateColumns: '1fr 320px',
+            gap: '32px',
+            alignItems: 'start',
         }}
         className="contact-grid"
       >
 
         {/* ── FORM ─────────────────────────────────────────── */}
-        <div>
+        <div ref={formRef}>
           <p
             style={{
               fontFamily: 'var(--font-mono)',
@@ -471,6 +559,7 @@ export default function Contact() {
 
         {/* ── RIGHT SIDE ───────────────────────────────────── */}
         <div
+          ref={rightRef}
           style={{
             display: 'flex',
             flexDirection: 'column',
@@ -481,6 +570,7 @@ export default function Contact() {
           {/* DIRECT CONTACTS */}
           {directContacts.map((contact) => (
             <a
+              className="contact-card"
               key={contact.id}
               href={contact.href}
               target={contact.href.startsWith('http') ? '_blank' : undefined}
@@ -649,6 +739,7 @@ export default function Contact() {
 
           {/* CV DOWNLOAD */}
           <a    
+            className="contact-card"
             href={contactData.cvPath}
             download
             style={{
@@ -715,6 +806,7 @@ export default function Contact() {
 
           {/* RESPONSE TIME */}
           <div
+            className="contact-card"
             style={{
               display: 'flex',
               alignItems: 'center',

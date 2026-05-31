@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { useReveal } from '@/lib/useReveal'
+import { useFadeUp } from '@/lib/useGSAP'
 import { featuredProjects } from '@/lib/data/projects'
 
 // ─── TAB TYPES ────────────────────────────────────────────────
@@ -17,7 +17,7 @@ const tabs: { id: TabId; label: string }[] = [
 
 // ─── PROJECTS COMPONENT ───────────────────────────────────────
 export default function Projects() {
-  const ref = useReveal()
+  const ref = useFadeUp({ y: 32, duration: 1.1 })
   const [activeProject, setActiveProject] = useState(0)
   const [activeTab, setActiveTab] = useState<TabId>('overview')
 
@@ -26,7 +26,7 @@ export default function Projects() {
   return (
     <section
       ref={ref}
-      className="reveal"
+     
       style={{
         maxWidth: '1200px',
         margin: '0 auto',

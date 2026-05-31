@@ -1,16 +1,21 @@
 'use client'
 
 import Link from 'next/link'
-import { useReveal } from '@/lib/useReveal'
+import { useFadeUp, useStaggerAnimation } from '@/lib/useGSAP'
 import { blogPosts, blogData } from '@/lib/data/blog'
 
 export default function Blog() {
-  const ref = useReveal()
+  const ref = useFadeUp({ y: 32, duration: 0.7 })
+  const cardsRef = useStaggerAnimation(
+    '.blog-card',
+    { opacity: 0, y: 28, rotation: 1 },
+    { opacity: 1, y: 0, rotation: 0, duration: 0.55, ease: 'power2.out', stagger: 0.12 },
+    { start: 'top 85%' }
+  )
 
   return (
     <section
       ref={ref}
-      className="reveal"
       style={{
         maxWidth: '1200px',
         margin: '0 auto',
@@ -74,6 +79,7 @@ export default function Blog() {
 
       {/* ── POSTS GRID ───────────────────────────────────────── */}
       <div
+        ref={cardsRef}
         style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(3, 1fr)',
@@ -83,6 +89,7 @@ export default function Blog() {
       >
         {blogPosts.map((post) => (
           <div
+            className="blog-card"
             key={post.id}
             style={{
               background: 'var(--bg-surface)',
