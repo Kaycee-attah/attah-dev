@@ -309,3 +309,10 @@ h1, h2, h3, h4, h5, h6 {
     grid-template-columns: repeat(2, 1fr) !important;
   }
 }
+
+/* ─── BLOG RESPONSIVE ────────────────────────────────────── */
+@media (max-width: 768px) {
+  .blog-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
