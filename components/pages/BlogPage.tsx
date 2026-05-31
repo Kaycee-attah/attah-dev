@@ -265,6 +265,10 @@ export default function BlogPage() {
           <>
             {/* FEATURED POST */}
             {featured && (
+                <Link
+                    href={`/blog/${featured.slug}`}
+                    style={{ textDecoration: 'none', display: 'block' }}
+                >
               <div
                 className="blog-page-card"
                 style={{
@@ -426,6 +430,8 @@ export default function BlogPage() {
                   </div>
                 </div>
               </div>
+
+              </Link>
             )}
 
             {/* DIVIDER */}
@@ -476,6 +482,11 @@ export default function BlogPage() {
               className="blog-page-grid"
             >
               {rest.map((post) => (
+                <Link
+                    key={post.id}
+                    href={`/blog/${post.slug}`}
+                    style={{ textDecoration: 'none', display: 'block' }}
+                >
                 <div
                   key={post.id}
                   className="blog-page-card"
@@ -618,6 +629,7 @@ export default function BlogPage() {
                     </div>
                   </div>
                 </div>
+                </Link>
               ))}
 
               {/* EMPTY PLACEHOLDER */}

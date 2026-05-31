@@ -8,11 +8,11 @@ import { useTheme } from '@/components/providers/ThemeProvider'
 
 // ─── NAVIGATION LINKS ────────────────────────────────────────
 const navLinks = [
-  { label: 'Projects',   href: '/projects'   },
+  { label: 'Projects', href: '/projects' },
   { label: 'Experience', href: '/experience' },
-  { label: 'Skills',     href: '/skills'     },
-  { label: 'Blog',       href: '/blog'       },
-  { label: 'Contact',    href: '/contact'    },
+  { label: 'Tools', href: '/tools' },
+  { label: 'Blog', href: '/blog' },
+  { label: 'Contact', href: '/contact' },
 ]
 
 // ─── NAVBAR COMPONENT ────────────────────────────────────────
