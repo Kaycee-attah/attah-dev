@@ -47,3 +47,4 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
 // ─── HOOK ────────────────────────────────────────────────────
 export const useTheme = () => useContext(ThemeContext)
+
