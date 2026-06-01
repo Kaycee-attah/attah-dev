@@ -1,62 +1,124 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
-import { useReveal } from '@/lib/useReveal'
+import { useEffect, useRef } from 'react'
+import { gsap } from 'gsap'
+import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { conversations } from '@/lib/data/experience'
 
+gsap.registerPlugin(ScrollTrigger)
+
 export default function Experience() {
-  const sectionRef = useReveal()
-  const [visiblePairs, setVisiblePairs] = useState<number[]>([])
-  const pairRefs = useRef<(HTMLDivElement | null)[]>([])
+  const sectionRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-  const observers: IntersectionObserver[] = []
-
-  pairRefs.current.forEach((el, index) => {
+    const el = sectionRef.current
     if (!el) return
 
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            // Scrolling down — reveal this pair and all before it
-            setVisiblePairs((prev) => {
-              const next = new Set(prev)
-              for (let i = 0; i <= index; i++) next.add(i)
-              return Array.from(next)
-            })
-          } else {
-            // Element left viewport — check if it left from the top
-            // (meaning user scrolled UP past it)
-            const rect = entry.boundingClientRect
-            const isAboveViewport = rect.bottom < 0
+    const ctx = gsap.context(() => {
 
-            if (isAboveViewport) {
-              // Left from top — keep it visible (already scrolled past)
-            } else {
-              // Left from bottom — user scrolled UP, remove this
-              // pair and everything after it
-              setVisiblePairs((prev) =>
-                prev.filter((i) => i < index)
-              )
+      // Heading fades up
+      gsap.fromTo(
+        '.exp-heading',
+        { opacity: 0, y: 24 },
+        {
+          opacity: 1,
+          y: 0,
+          duration: 0.7,
+          ease: 'power2.out',
+          scrollTrigger: {
+            trigger: '.exp-heading',
+            start: 'top 88%',
+            toggleActions: 'play reverse play reverse',
+          },
+        }
+      )
+
+      // Each Q&A pair — question slides from right, answer from left
+      gsap.utils.toArray<HTMLElement>('.exp-pair').forEach((pair) => {
+        const question = pair.querySelector('.exp-question')
+        const answer = pair.querySelector('.exp-answer')
+        const divider = pair.querySelector('.exp-divider')
+
+        if (question) {
+          gsap.fromTo(
+            question,
+            { opacity: 0, x: 24 },
+            {
+              opacity: 1,
+              x: 0,
+              duration: 0.5,
+              ease: 'power2.out',
+              scrollTrigger: {
+                trigger: pair,
+                start: 'top 88%',
+                toggleActions: 'play reverse play reverse',
+              },
             }
-          }
-        })
-      },
-      { threshold: 0.15 }
-    )
+          )
+        }
 
-    observer.observe(el)
-    observers.push(observer)
-  })
+        if (answer) {
+          gsap.fromTo(
+            answer,
+            { opacity: 0, x: -24 },
+            {
+              opacity: 1,
+              x: 0,
+              duration: 0.5,
+              delay: 0.25,
+              ease: 'power2.out',
+              scrollTrigger: {
+                trigger: pair,
+                start: 'top 88%',
+                toggleActions: 'play reverse play reverse',
+              },
+            }
+          )
+        }
 
-  return () => observers.forEach((o) => o.disconnect())
-}, [])
+        if (divider) {
+          gsap.fromTo(
+            divider,
+            { opacity: 0 },
+            {
+              opacity: 1,
+              duration: 0.4,
+              delay: 0.45,
+              scrollTrigger: {
+                trigger: pair,
+                start: 'top 88%',
+                toggleActions: 'play reverse play reverse',
+              },
+            }
+          )
+        }
+      })
+
+      // Status pill fades up last
+      gsap.fromTo(
+        '.exp-status-pill',
+        { opacity: 0, y: 12 },
+        {
+          opacity: 1,
+          y: 0,
+          duration: 0.5,
+          ease: 'power2.out',
+          scrollTrigger: {
+            trigger: '.exp-status-pill',
+            start: 'top 92%',
+            toggleActions: 'play reverse play reverse',
+          },
+        }
+      )
+
+    }, el)
+
+    return () => ctx.revert()
+  }, [])
 
   return (
     <section
       ref={sectionRef}
-      className="reveal"
       style={{
         maxWidth: '1200px',
         margin: '0 auto',
@@ -65,7 +127,7 @@ export default function Experience() {
     >
 
       {/* ── HEADING ──────────────────────────────────────────── */}
-      <div style={{ marginBottom: '48px' }}>
+      <div className="exp-heading" style={{ marginBottom: '48px' }}>
         <h2
           style={{
             fontSize: 'clamp(28px, 4vw, 40px)',
@@ -77,13 +139,7 @@ export default function Experience() {
           }}
         >
           The{' '}
-          <em
-            style={{
-              fontStyle: 'italic',
-              fontWeight: 300,
-              color: 'var(--text-muted)',
-            }}
-          >
+          <em style={{ fontStyle: 'italic', fontWeight: 300, color: 'var(--text-muted)' }}>
             journey,
           </em>
         </h2>
@@ -121,193 +177,171 @@ export default function Experience() {
           margin: '0 auto',
         }}
       >
-        {conversations.map((convo, index) => {
-          const isVisible = visiblePairs.includes(index)
+        {conversations.map((convo, index) => (
+          <div
+            key={convo.id}
+            className="exp-pair"
+            style={{ marginBottom: '24px' }}
+          >
 
-          return (
+            {/* ── QUESTION — right aligned ──────────────── */}
             <div
-              key={convo.id}
-              ref={(el) => { pairRefs.current[index] = el }}
-              style={{ marginBottom: '24px' }}
+              className="exp-question"
+              style={{
+                display: 'flex',
+                justifyContent: 'flex-end',
+                marginBottom: '10px',
+              }}
             >
-
-              {/* ── QUESTION — right aligned ──────────────── */}
               <div
                 style={{
-                  display: 'flex',
-                  justifyContent: 'flex-end',
-                  marginBottom: '10px',
-                  opacity: isVisible ? 1 : 0,
-                  transform: isVisible
-                    ? 'translateX(0)'
-                    : 'translateX(20px)',
-                  transition: 'opacity 0.4s ease, transform 0.4s ease',
+                  background: 'rgba(245,158,11,0.08)',
+                  border: '0.5px solid rgba(245,158,11,0.2)',
+                  borderRadius: '16px 16px 2px 16px',
+                  padding: '10px 16px',
+                  maxWidth: '72%',
                 }}
               >
-                <div
+                <p
                   style={{
-                    background: 'rgba(245,158,11,0.08)',
-                    border: '0.5px solid rgba(245,158,11,0.2)',
-                    borderRadius: '16px 16px 2px 16px',
-                    padding: '10px 16px',
-                    maxWidth: '72%',
-                  }}
-                >
-                  <p
-                    style={{
-                      fontFamily: 'var(--font-mono)',
-                      fontSize: '9px',
-                      color: 'rgba(245,158,11,0.5)',
-                      letterSpacing: '0.06em',
-                      textTransform: 'uppercase',
-                      marginBottom: '4px',
-                      textAlign: 'right',
-                    }}
-                  >
-                    Recruiter
-                  </p>
-                  <p
-                    style={{
-                      fontSize: '13px',
-                      color: 'var(--amber)',
-                      lineHeight: 1.5,
-                      textAlign: 'right',
-                    }}
-                  >
-                    {convo.question}
-                  </p>
-                </div>
-              </div>
-
-              {/* ── ANSWER — left aligned ─────────────────── */}
-              <div
-                style={{
-                  display: 'flex',
-                  justifyContent: 'flex-start',
-                  gap: '10px',
-                  opacity: isVisible ? 1 : 0,
-                  transform: isVisible
-                    ? 'translateX(0)'
-                    : 'translateX(-20px)',
-                  transition:
-                    'opacity 0.4s ease 0.3s, transform 0.4s ease 0.3s',
-                }}
-              >
-                {/* AVATAR */}
-                <div
-                  style={{
-                    width: '32px',
-                    height: '32px',
-                    borderRadius: '50%',
-                    background: 'var(--bg-elevated)',
-                    border: '1px solid var(--border-hover)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontSize: '10px',
-                    fontWeight: 700,
-                    color: 'var(--amber)',
-                    flexShrink: 0,
-                    marginTop: '2px',
                     fontFamily: 'var(--font-mono)',
+                    fontSize: '9px',
+                    color: 'rgba(245,158,11,0.5)',
+                    letterSpacing: '0.06em',
+                    textTransform: 'uppercase',
+                    marginBottom: '4px',
+                    textAlign: 'right',
                   }}
                 >
-                  AK
-                </div>
-
-                {/* ANSWER BUBBLE */}
-                <div
+                  Recruiter
+                </p>
+                <p
                   style={{
-                    background: 'var(--bg-surface)',
-                    border: '0.5px solid var(--border)',
-                    borderRadius: '2px 16px 16px 16px',
-                    padding: '12px 16px',
-                    maxWidth: '78%',
+                    fontSize: '13px',
+                    color: 'var(--amber)',
+                    lineHeight: 1.5,
+                    textAlign: 'right',
                   }}
                 >
-                  <p
-                    style={{
-                      fontFamily: 'var(--font-mono)',
-                      fontSize: '9px',
-                      color: 'var(--text-ghost)',
-                      letterSpacing: '0.06em',
-                      textTransform: 'uppercase',
-                      marginBottom: '6px',
-                    }}
-                  >
-                    Attah Kelechi
-                  </p>
+                  {convo.question}
+                </p>
+              </div>
+            </div>
 
-                  {/* Answer text with highlights */}
-                  <p
-                    style={{
-                      fontSize: '13px',
-                      color: 'var(--text-secondary)',
-                      lineHeight: 1.7,
-                      marginBottom:
-                        convo.stack.length > 0 ? '10px' : '0',
-                    }}
-                    dangerouslySetInnerHTML={{
-                      __html: convo.highlights.reduce(
-                        (text, highlight) =>
-                          text.replace(
-                            highlight,
-                            `<span style="color:var(--amber)">${highlight}</span>`
-                          ),
-                        convo.answer
-                      ),
-                    }}
-                  />
-
-                  {/* Stack tags */}
-                  {convo.stack.length > 0 && (
-                    <div
-                      style={{
-                        display: 'flex',
-                        gap: '5px',
-                        flexWrap: 'wrap',
-                      }}
-                    >
-                      {convo.stack.map((tag) => (
-                        <span
-                          key={tag}
-                          style={{
-                            padding: '2px 8px',
-                            border: '0.5px solid var(--border)',
-                            borderRadius: '3px',
-                            fontFamily: 'var(--font-mono)',
-                            fontSize: '9px',
-                            color: 'var(--text-ghost)',
-                            background: 'var(--bg-elevated)',
-                          }}
-                        >
-                          {tag}
-                        </span>
-                      ))}
-                    </div>
-                  )}
-                </div>
+            {/* ── ANSWER — left aligned ─────────────────── */}
+            <div
+              className="exp-answer"
+              style={{
+                display: 'flex',
+                justifyContent: 'flex-start',
+                gap: '10px',
+              }}
+            >
+              {/* AVATAR */}
+              <div
+                style={{
+                  width: '32px',
+                  height: '32px',
+                  borderRadius: '50%',
+                  background: 'var(--bg-elevated)',
+                  border: '1px solid var(--border-hover)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '10px',
+                  fontWeight: 700,
+                  color: 'var(--amber)',
+                  flexShrink: 0,
+                  marginTop: '2px',
+                  fontFamily: 'var(--font-mono)',
+                }}
+              >
+                AK
               </div>
 
-              {/* ── DIVIDER between pairs ─────────────────── */}
-              {index < conversations.length - 1 && (
-                <div
+              {/* ANSWER BUBBLE */}
+              <div
+                style={{
+                  background: 'var(--bg-surface)',
+                  border: '0.5px solid var(--border)',
+                  borderRadius: '2px 16px 16px 16px',
+                  padding: '12px 16px',
+                  maxWidth: '78%',
+                }}
+              >
+                <p
                   style={{
-                    height: '0.5px',
-                    background: 'var(--border)',
-                    margin: '20px 0 0',
-                    opacity: isVisible ? 1 : 0,
-                    transition: 'opacity 0.4s ease 0.5s',
+                    fontFamily: 'var(--font-mono)',
+                    fontSize: '9px',
+                    color: 'var(--text-ghost)',
+                    letterSpacing: '0.06em',
+                    textTransform: 'uppercase',
+                    marginBottom: '6px',
+                  }}
+                >
+                  Attah Kelechi
+                </p>
+
+                <p
+                  style={{
+                    fontSize: '13px',
+                    color: 'var(--text-secondary)',
+                    lineHeight: 1.7,
+                    marginBottom: convo.stack.length > 0 ? '10px' : '0',
+                  }}
+                  dangerouslySetInnerHTML={{
+                    __html: convo.highlights.reduce(
+                      (text, highlight) =>
+                        text.replace(
+                          highlight,
+                          `<span style="color:var(--amber)">${highlight}</span>`
+                        ),
+                      convo.answer
+                    ),
                   }}
                 />
-              )}
 
+                {convo.stack.length > 0 && (
+                  <div style={{ display: 'flex', gap: '5px', flexWrap: 'wrap' }}>
+                    {convo.stack.map((tag) => (
+                      <span
+                        key={tag}
+                        style={{
+                          padding: '2px 8px',
+                          border: '0.5px solid var(--border)',
+                          borderRadius: '3px',
+                          fontFamily: 'var(--font-mono)',
+                          fontSize: '9px',
+                          color: 'var(--text-ghost)',
+                          background: 'var(--bg-elevated)',
+                        }}
+                      >
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
-          )
-        })}
+
+            {/* ── DIVIDER ───────────────────────────────── */}
+            {index < conversations.length - 1 && (
+              <div
+                className="exp-divider"
+                style={{
+                  height: '0.5px',
+                  background: 'var(--border)',
+                  margin: '20px 0 0',
+                }}
+              />
+            )}
+
+          </div>
+        ))}
 
         {/* ── STATUS PILL ──────────────────────────────────── */}
         <div
+          className="exp-status-pill"
           style={{
             display: 'flex',
             justifyContent: 'center',
