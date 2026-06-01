@@ -1,6 +1,5 @@
 import Link from 'next/link'
 
-// ─── FOOTER LINKS ────────────────────────────────────────────
 const footerLinks = [
   { label: 'Projects',   href: '/projects'   },
   { label: 'Experience', href: '/experience' },
@@ -10,13 +9,18 @@ const footerLinks = [
   { label: 'Contact',    href: '/contact'    },
 ]
 
-const socialLinks = [
-  { label: 'GitHub',   href: 'https://github.com/Kaycee-attah'              },
-  { label: 'LinkedIn', href: 'https://linkedin.com/in/kelechi-attah'        },
-  { label: 'Email',    href: 'mailto:attahkelechi97@gmail.com'              },
+const toolLinks = [
+  { label: 'WCAG checker',       href: '/tools/wcag'        },
+  { label: 'CSS specificity',    href: '/tools/specificity' },
+  { label: 'TanStack generator', href: '/tools/tanstack'    },
 ]
 
-// ─── FOOTER COMPONENT ────────────────────────────────────────
+const socialLinks = [
+  { label: 'GitHub',   href: 'https://github.com/Kaycee-attah'       },
+  { label: 'LinkedIn', href: 'https://linkedin.com/in/kelechi-attah'  },
+  { label: 'Email',    href: 'mailto:attahkelechi97@gmail.com'        },
+]
+
 export default function Footer() {
   const currentYear = new Date().getFullYear()
 
@@ -28,14 +32,13 @@ export default function Footer() {
         marginTop: 'auto',
       }}
     >
-      {/* MAIN FOOTER CONTENT */}
       <div
         style={{
           maxWidth: '1200px',
           margin: '0 auto',
           padding: '48px 24px 32px',
           display: 'grid',
-          gridTemplateColumns: '1fr 1fr 1fr',
+          gridTemplateColumns: '1fr 1fr 1fr 1fr',
           gap: '32px',
         }}
         className="footer-grid"
@@ -113,7 +116,49 @@ export default function Footer() {
           </ul>
         </div>
 
-        {/* COLUMN 3 — Connect */}
+        {/* COLUMN 3 — Free tools */}
+        <div>
+          <p
+            style={{
+              fontFamily: 'var(--font-mono)',
+              fontSize: '10px',
+              color: 'var(--text-ghost)',
+              letterSpacing: '0.08em',
+              textTransform: 'uppercase',
+              marginBottom: '14px',
+            }}
+          >
+            Free tools
+          </p>
+          <ul
+            style={{
+              listStyle: 'none',
+              margin: 0,
+              padding: 0,
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '8px',
+            }}
+          >
+            {toolLinks.map((link) => (
+              <li key={link.href}>
+                <Link
+                  href={link.href}
+                  style={{
+                    fontSize: '13px',
+                    color: 'var(--text-dim)',
+                    textDecoration: 'none',
+                    transition: 'color var(--transition)',
+                  }}
+                >
+                  {link.label}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        {/* COLUMN 4 — Connect */}
         <div>
           <p
             style={{

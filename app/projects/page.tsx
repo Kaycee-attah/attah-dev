@@ -332,54 +332,67 @@ export default function ProjectsPage() {
               </div>
 
               {/* LINKS */}
-              <div
+                <div
                 style={{
-                  display: 'flex',
-                  gap: '8px',
-                  marginTop: 'auto',
+                    display: 'flex',
+                    gap: '8px',
+                    marginTop: 'auto',
+                    flexWrap: 'wrap',
                 }}
-              >
+                >
+                {'caseStudyUrl' in project && project.caseStudyUrl && (
+                    <Link
+                    href={project.caseStudyUrl as string}
+                    className="btn-primary"
+                    style={{
+                        fontSize: '11px',
+                        padding: '7px 14px',
+                    }}
+                    >
+                    Case study →
+                    </Link>
+                )}
                 {project.liveUrl !== '#' && (
-                  <a
+                    <a
                     href={project.liveUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="btn-primary"
+                    className="btn-secondary"
                     style={{
-                      fontSize: '11px',
-                      padding: '7px 14px',
+                        fontSize: '11px',
+                        padding: '7px 14px',
                     }}
-                  >
+                    >
                     ↗ Live
-                  </a>
+                    </a>
                 )}
-                {project.githubUrl !== '#' && (
-                  <a
+                {project.githubUrl !== '#' && !('caseStudyUrl' in project) && (
+                    <a
                     href={project.githubUrl}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="btn-secondary"
                     style={{
-                      fontSize: '11px',
-                      padding: '7px 14px',
+                        fontSize: '11px',
+                        padding: '7px 14px',
                     }}
-                  >
+                    >
                     GitHub
-                  </a>
+                    </a>
                 )}
-                {project.liveUrl === '#' && project.githubUrl === '#' && (
-                  <span
+                {project.liveUrl === '#' && project.githubUrl === '#' && !('caseStudyUrl' in project) && (
+                    <span
                     style={{
-                      fontFamily: 'var(--font-mono)',
-                      fontSize: '10px',
-                      color: 'var(--text-whisper)',
-                      alignSelf: 'center',
+                        fontFamily: 'var(--font-mono)',
+                        fontSize: '10px',
+                        color: 'var(--text-whisper)',
+                        alignSelf: 'center',
                     }}
-                  >
+                    >
                     Private / Company project
-                  </span>
+                    </span>
                 )}
-              </div>
+                </div>
             </div>
 
           </div>

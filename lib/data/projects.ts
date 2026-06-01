@@ -204,6 +204,7 @@ export const allProjects = [
       'Real-time 3D furniture customizer where users swap materials at 60fps and pay via Flutterwave. Load time reduced from 8s to 1.2s through lazy loading and texture caching.',
     liveUrl: 'https://fuege.netlify.app',
     githubUrl: 'https://github.com/Kaycee-attah',
+    caseStudyUrl: '/projects/fuege',
     metrics: [
       { value: '60fps', label: 'Texture swap' },
       { value: '1.2s', label: 'Load time' },
@@ -271,6 +272,7 @@ export const allProjects = [
       'Full hotel operations platform — reservations, housekeeping, financials, reporting. 11 live report pages, 30+ TanStack hooks, 9 modules.',
     liveUrl: '#',
     githubUrl: '#',
+    caseStudyUrl: '/projects/hms',
     metrics: [
       { value: '11', label: 'Report pages' },
       { value: '30+', label: 'Query hooks' },
