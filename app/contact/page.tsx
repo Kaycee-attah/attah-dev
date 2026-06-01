@@ -94,11 +94,24 @@ export default function ContactPage() {
     e.preventDefault()
     if (!formData.name || !formData.email || !formData.message) return
     setStatus('sending')
-    setTimeout(() => {
-      setStatus('success')
-      setFormData({ name: '', email: '', company: '', subject: '', message: '' })
-      setCharCount(0)
-    }, 1200)
+
+    try {
+        const res = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+        })
+
+        const data = await res.json()
+
+        if (!res.ok) throw new Error(data.error || 'Failed to send')
+
+        setStatus('success')
+        setFormData({ name: '', email: '', company: '', subject: '', message: '' })
+        setCharCount(0)
+    } catch (err) {
+        setStatus('error')
+    }
   }
 
   return (
@@ -547,6 +560,22 @@ export default function ContactPage() {
 
             </div>
           )}
+
+          {status === 'error' && (
+            <div
+                style={{
+                padding: '12px 16px',
+                background: 'rgba(239,68,68,0.06)',
+                border: '0.5px solid rgba(239,68,68,0.2)',
+                borderRadius: '8px',
+                marginBottom: '16px',
+                }}
+            >
+                <p style={{ fontSize: '13px', color: '#f87171' }}>
+                Something went wrong. Please try again or email me directly.
+                </p>
+            </div>
+         )}
         </div>
 
         {/* ── RIGHT SIDE ─────────────────────────────────────── */}

@@ -17,7 +17,28 @@ export default function BlogPage() {
   )
 
   const [activeFilter, setActiveFilter] = useState('All')
-  const [search, setSearch] = useState('')
+    const [search, setSearch] = useState('')
+    const [newsletterEmail, setNewsletterEmail] = useState('')
+    const [newsletterStatus, setNewsletterStatus] = useState<'idle' | 'sending' | 'success' | 'error'
+    >('idle')
+
+    const handleNewsletter = async () => {
+    if (!newsletterEmail) return
+    setNewsletterStatus('sending')
+    try {
+        const res = await fetch('/api/newsletter', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: newsletterEmail }),
+        })
+        const data = await res.json()
+        if (!res.ok) throw new Error(data.error)
+        setNewsletterStatus('success')
+        setNewsletterEmail('')
+    } catch {
+        setNewsletterStatus('error')
+    }
+ }
 
   const filtered = blogPosts.filter((post) => {
     const matchesFilter =
@@ -715,24 +736,65 @@ export default function BlogPage() {
               flexShrink: 0,
             }}
           >
-            <input
-              type="email"
-              placeholder="your@email.com"
-              style={{
-                padding: '9px 14px',
-                background: 'var(--bg-base)',
-                border: '0.5px solid var(--border-hover)',
-                borderRadius: '6px',
+            {newsletterStatus === 'success' ? (
+            <p
+                style={{
+                fontFamily: 'var(--font-mono)',
                 fontSize: '12px',
-                color: 'var(--text-muted)',
-                fontFamily: 'var(--font-sans)',
-                width: '200px',
-                outline: 'none',
-              }}
-            />
-            <button className="btn-primary" style={{ fontSize: '12px', padding: '9px 18px' }}>
-              Notify me
-            </button>
+                color: '#4ade80',
+                padding: '9px 0',
+                }}
+            >
+                ✓ You&apos;re subscribed — check your inbox.
+            </p>
+            ) : (
+            <>
+                <input
+                type="email"
+                placeholder="your@email.com"
+                value={newsletterEmail}
+                onChange={(e) => setNewsletterEmail(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleNewsletter()}
+                style={{
+                    padding: '9px 14px',
+                    background: 'var(--bg-base)',
+                    border: '0.5px solid var(--border-hover)',
+                    borderRadius: '6px',
+                    fontSize: '12px',
+                    color: 'var(--text-muted)',
+                    fontFamily: 'var(--font-sans)',
+                    width: '200px',
+                    outline: 'none',
+                }}
+                />
+                <button
+                onClick={handleNewsletter}
+                disabled={newsletterStatus === 'sending'}
+                className="btn-primary"
+                style={{
+                    fontSize: '12px',
+                    padding: '9px 18px',
+                    opacity: newsletterStatus === 'sending' ? 0.7 : 1,
+                    cursor: newsletterStatus === 'sending' ? 'not-allowed' : 'pointer',
+                }}
+                >
+                {newsletterStatus === 'sending' ? 'Subscribing...' : 'Notify me'}
+                </button>
+                {newsletterStatus === 'error' && (
+                <p
+                    style={{
+                    fontFamily: 'var(--font-mono)',
+                    fontSize: '11px',
+                    color: '#f87171',
+                    width: '100%',
+                    marginTop: '4px',
+                    }}
+                >
+                    Something went wrong. Try again.
+                </p>
+                )}
+            </>
+            )}
           </div>
         </div>
 
