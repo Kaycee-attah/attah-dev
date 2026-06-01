@@ -3,6 +3,8 @@
 // When Admin panel is built, these will be fetched
 // from the database instead.
 
+import { productIQData } from './business-builder'
+
 export const toolsData = {
   title: 'Built from',
   titleEm: 'real problems.',
@@ -65,4 +67,19 @@ export const toolsList = [
     heroDesc:
       'Describe your endpoint, paste the Swagger JSON response, and get a fully typed hook — useQuery for GET, useMutation for everything else. TypeScript interface auto-generated from JSON.',
   },
+  {
+    id: 'business-builder',
+    href: '/tools/business-builder',
+    icon: '🧠',
+    iconBg: 'rgba(99,102,241,0.1)',
+    name: 'ProductIQ — What should you build?',
+    sub: 'Answer 8 questions · get a personalised product strategy',
+    desc: 'Not sure what to build for your business? Answer 8 questions and get a personalised strategy — platform recommendation, name ideas, monetisation roadmap, and your first 3 things to build. Powered by AI.',
+    tags: ['Business', 'Strategy', 'AI-powered'],
+    pageTitle: productIQData.pageTitle,
+    pageDescription: productIQData.pageDescription,
+    heroTitle: 'ProductIQ',
+    heroTitleEm: 'What should you build?',
+    heroDesc: productIQData.description,
+ },
 ]

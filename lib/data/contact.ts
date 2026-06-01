@@ -49,6 +49,16 @@ export const directContacts = [
     colorBg: 'rgba(37,211,102,0.1)',
     icon: '✆',
   },
+  {
+    id: 'calendly',
+    label: 'Calendly',
+    value: 'Book a free 20-min call',
+    sub: 'Pick a time that works for you',
+    href: 'https://calendly.com/attahkelechi97/free-20-min-product-strategy-call',
+    color: '#006BFF',
+    colorBg: 'rgba(0,107,255,0.1)',
+    icon: '📅',
+ },
 ]
 
 export const socialLinks = [

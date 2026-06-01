@@ -122,9 +122,9 @@ export const bookingOptions = [
   {
     id: 'calendly',
     label: 'Book on Calendly →',
-    href: 'https://calendly.com/placeholder',
+    href: 'https://calendly.com/attahkelechi97/free-20-min-product-strategy-call',
     style: 'primary',
-  },
+},
   {
     id: 'whatsapp',
     label: 'WhatsApp me',
