@@ -236,10 +236,12 @@ export default function BusinessBuilder() {
           text: `${questions[0].observation} **${questions[0].question}**`,
         },
       ])
-    } catch (e) {
-      setError('Something went wrong generating follow-up questions. Please try again.')
-      setIsTyping(false)
-    }
+    } catch (e: unknown) {
+        const message = e instanceof Error ? e.message : 'Something went wrong.'
+        setError(message)
+        setIsTyping(false)
+        setPhase('phase1')
+      }
   }, [])
 
   const handleFollowUpAnswer = async () => {
@@ -337,10 +339,11 @@ export default function BusinessBuilder() {
 
         trackEvent('results_viewed', sessionId)
         setPhase('results')
-    } catch (e) {
-        setError('Something went wrong generating your strategy. Please try again.')
-        setPhase('phase2')
-        setShowGate(true)
+    } catch (e: unknown) {
+      const message = e instanceof Error ? e.message : 'Something went wrong.'
+      setError(message)
+      setPhase('phase2')
+      setShowGate(true)
     } finally {
         setGateSubmitting(false)
     }
@@ -380,6 +383,47 @@ export default function BusinessBuilder() {
           </span>
         )}
       </div>
+
+      {/* ── RATE LIMIT ERROR ─────────────────────────────────── */}
+      {error && error.includes('limit') && (
+        <div
+          style={{
+            padding: '20px 24px',
+            marginTop: '20px',
+            background: 'rgba(239,68,68,0.06)',
+            border: '0.5px solid rgba(239,68,68,0.2)',
+            borderRadius: '10px',
+            display: 'flex',
+            alignItems: 'flex-start',
+            gap: '12px',
+          }}
+        >
+          <span style={{ fontSize: '18px', flexShrink: 0 }}>⏱</span>
+          <div>
+            <div style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '4px' }}>
+              Session limit reached
+            </div>
+            <p style={{ fontSize: '13px', color: 'var(--text-dim)', lineHeight: 1.65, marginBottom: '12px' }}>
+              {error}
+            </p>
+            <button
+              onClick={() => { setError(''); resetAll() }}
+              style={{
+                padding: '8px 16px',
+                background: 'var(--bg-elevated)',
+                border: '0.5px solid var(--border)',
+                borderRadius: '6px',
+                fontSize: '12px',
+                color: 'var(--text-secondary)',
+                cursor: 'pointer',
+                fontFamily: 'var(--font-sans)',
+              }}
+            >
+              Try again later
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* ── INTRO ────────────────────────────────────────────── */}
       {phase === 'intro' && (
@@ -988,6 +1032,123 @@ export default function BusinessBuilder() {
           </div>
 
           {/* CTA */}
+          {/* ── PORTFOLIO DISCOVERY ─────────────────────────────── */}
+          <div
+            style={{
+              background: 'var(--bg-surface)',
+              border: '0.5px solid var(--border)',
+              borderRadius: '10px',
+              padding: '16px 20px',
+              marginBottom: '16px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: '16px',
+              flexWrap: 'wrap',
+            }}
+          >
+            <div>
+              <div
+                style={{
+                  fontFamily: 'var(--font-mono)',
+                  fontSize: '10px',
+                  color: 'var(--text-ghost)',
+                  letterSpacing: '0.06em',
+                  textTransform: 'uppercase',
+                  marginBottom: '5px',
+                }}
+              >
+                Who built this tool?
+              </div>
+              <div
+                style={{
+                  fontSize: '13px',
+                  fontWeight: 600,
+                  color: 'var(--text-primary)',
+                  marginBottom: '4px',
+                }}
+              >
+                Attah Kelechi — Frontend Engineer
+              </div>
+              <p
+                style={{
+                  fontSize: '12px',
+                  color: 'var(--text-dim)',
+                  lineHeight: 1.6,
+                  maxWidth: '420px',
+                }}
+              >
+                I build production-grade web applications for businesses that want to grow online.
+                If you liked this tool, there's a lot more to see.
+              </p>
+            </div>
+            <div
+              style={{
+                display: 'flex',
+                gap: '8px',
+                flexWrap: 'wrap',
+                flexShrink: 0,
+              }}
+            >
+              <a
+                href="/projects"
+                style={{
+                  padding: '8px 14px',
+                  background: 'var(--bg-elevated)',
+                  border: '0.5px solid var(--border)',
+                  borderRadius: '7px',
+                  fontSize: '12px',
+                  color: 'var(--text-secondary)',
+                  textDecoration: 'none',
+                  fontFamily: 'var(--font-sans)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                }}
+              >
+                See my work →
+              </a>
+              <a
+                href="/experience"
+                style={{
+                  padding: '8px 14px',
+                  background: 'var(--bg-elevated)',
+                  border: '0.5px solid var(--border)',
+                  borderRadius: '7px',
+                  fontSize: '12px',
+                  color: 'var(--text-secondary)',
+                  textDecoration: 'none',
+                  fontFamily: 'var(--font-sans)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                }}
+              >
+                My story →
+              </a>
+              <a
+                href="/"
+                style={{
+                  padding: '8px 14px',
+                  background: 'rgba(245,158,11,0.06)',
+                  border: '0.5px solid rgba(245,158,11,0.2)',
+                  borderRadius: '7px',
+                  fontSize: '12px',
+                  color: 'var(--amber)',
+                  textDecoration: 'none',
+                  fontFamily: 'var(--font-sans)',
+                  fontWeight: 600,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                }}
+              >
+                attah.dev →
+              </a>
+            </div>
+          </div>
+
+          {/* ── CTA ──────────────────────────────────────────────── */}
           <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
             <a
               href={`https://calendly.com/attahkelechi97/free-20-min-product-strategy-call?redirect_uri=${encodeURIComponent('https://attah-dev.vercel.app/tools/business-builder')}`}
@@ -999,8 +1160,8 @@ export default function BusinessBuilder() {
                   body: JSON.stringify({ id: leadId, calendly_clicked: true }),
                 })
               }}
-                target="_blank"
-                rel="noopener noreferrer"
+              target="_blank"
+              rel="noopener noreferrer"
               style={{ flex: 1, minWidth: '200px', display: 'block', textAlign: 'center', padding: '14px', background: 'var(--amber)', color: 'var(--bg-base)', borderRadius: '8px', fontSize: '14px', fontWeight: 700, textDecoration: 'none', fontFamily: 'var(--font-sans)' }}
             >
               Let's build this together → Book a free 20min call

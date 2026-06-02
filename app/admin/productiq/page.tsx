@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { phase1Questions } from '@/lib/data/business-builder'
+import { Toast, useToast } from '@/components/admin/Toast'
 
 interface Lead {
   id: string
@@ -54,6 +55,7 @@ export default function ProductIQAdmin() {
   const [statusFilter, setStatusFilter] = useState('all')
   const [loading, setLoading] = useState(true)
   const [total, setTotal] = useState(0)
+  const { toasts, removeToast, toast } = useToast()
 
   const fetchData = useCallback(async () => {
     setLoading(true)
@@ -92,12 +94,18 @@ export default function ProductIQAdmin() {
   }
 
   const updateStatus = async (id: string, status: string) => {
-    await fetch('/api/admin/leads', {
+    const t = toast.loading('Updating status...')
+    const res = await fetch('/api/admin/leads', {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ id, status }),
     })
-    fetchData()
+    if (res.ok) {
+      t.success('Status updated')
+      fetchData()
+    } else {
+      t.error('Failed to update status.')
+    }
   }
 
   const funnelSteps = analytics ? [
@@ -113,10 +121,10 @@ export default function ProductIQAdmin() {
 
   const sidebarItems = [
     { label: 'ProductIQ', href: '/admin/productiq', icon: '🧠', active: true, badge: analytics?.byStatus.new },
-    { label: 'Projects', href: '#', icon: '💼', active: false },
-    { label: 'Experience', href: '#', icon: '📋', active: false },
-    { label: 'Blog', href: '#', icon: '✍️', active: false },
-    { label: 'Services', href: '#', icon: '🔧', active: false },
+    { label: 'Projects', href: '/admin/projects', icon: '💼', active: false },
+    { label: 'Experience', href: '/admin/experience', icon: '📋', active: false },
+    { label: 'Blog', href: '/admin/blog', icon: '✍️', active: false },
+    { label: 'Services', href: '/admin/services', icon: '🔧', active: false },
   ]
 
   return (
@@ -1056,6 +1064,8 @@ export default function ProductIQAdmin() {
 
         </div>
       </div>
+
+      <Toast toasts={toasts} removeToast={removeToast} />
     </div>
   )
 }
