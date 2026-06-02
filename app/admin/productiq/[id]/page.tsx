@@ -217,7 +217,7 @@ export default async function LeadDetailPage({
                     marginBottom: '4px',
                   }}
                 >
-                  {key.replace(/_/g, ' ')}
+                  {key}
                 </div>
                 <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
                   <span style={{ color: '#60a5fa', fontWeight: 700, flexShrink: 0 }}>→</span>

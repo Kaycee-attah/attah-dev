@@ -20,10 +20,12 @@ export async function POST(req: NextRequest) {
 
     // ── TRACK ANALYTICS EVENT ──────────────────────────────────
     if (action === 'track') {
+      const metadata = phase1Answers || {}
       await supabaseAdmin.from('productiq_analytics').insert({
-        event: userMessage, // reusing userMessage field for event name
+        event: userMessage,
         session_id: sessionId,
-        metadata: phase1Answers || {},
+        metadata,
+        device: (metadata as Record<string, string>).device || 'unknown',
       })
       return NextResponse.json({ success: true }, { status: 200 })
     }
@@ -163,13 +165,13 @@ async function notifyAttah({
     const phase2Html = Object.entries(phase2Answers)
     .map(([k, v]) => `
         <tr>
-        <td colspan="2" style="padding:10px 0 3px;font-size:12px;color:#9ca3af;font-style:italic;border-top:0.5px solid #1f2230;">
-            ${k.replace(/_/g, ' ')}
-        </td>
+          <td colspan="2" style="padding:10px 0 3px;font-size:12px;color:#9ca3af;font-style:italic;border-top:0.5px solid #1f2230;">
+              ${k}
+          </td>
         </tr>
         <tr>
-        <td style="padding:0 0 8px;font-size:13px;color:#60a5fa;font-weight:700;">→</td>
-        <td style="padding:0 0 8px;font-size:13px;color:#e5e7eb;">${v}</td>
+          <td style="padding:0 0 8px;font-size:13px;color:#60a5fa;font-weight:700;">→</td>
+          <td style="padding:0 0 8px;font-size:13px;color:#e5e7eb;">${v}</td>
         </tr>
     `)
     .join('')

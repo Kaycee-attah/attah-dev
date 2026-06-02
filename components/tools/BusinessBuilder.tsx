@@ -242,7 +242,10 @@ export default function BusinessBuilder() {
     if (!finalAnswer) return
 
     const question = followUps[currentFollowUp]
-    const newFollowUpAnswers = { ...followUpAnswers, [question.id]: finalAnswer }
+    const newFollowUpAnswers = {
+      ...followUpAnswers,
+      [question.question]: finalAnswer,
+    }
     setFollowUpAnswers(newFollowUpAnswers)
 
     // Add user message to chat
@@ -982,7 +985,7 @@ export default function BusinessBuilder() {
           {/* CTA */}
           <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
             <a
-              href="https://calendly.com/attahkelechi97/free-20-min-product-strategy-call"
+              href={`https://calendly.com/attahkelechi97/free-20-min-product-strategy-call?redirect_uri=${encodeURIComponent('https://attah-dev.vercel.app/tools/business-builder')}`}
               onClick={() => {
                 trackEvent('calendly_click', sessionId)
                 fetch('/api/admin/leads', {
