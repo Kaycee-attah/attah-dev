@@ -22,6 +22,11 @@ export const metadata: Metadata = {
   },
   description:
     "Frontend Developer building production-grade web applications and APIs. Computer Engineering finalist at Redeemer's University. First Class, 4.79 GPA.",
+  icons: {
+    icon: '/favicon.svg',
+    shortcut: '/favicon.svg',
+    apple: '/favicon.svg',
+  },
   keywords: [
     "Frontend Developer",
     "React Developer Nigeria",
