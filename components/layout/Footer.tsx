@@ -10,6 +10,7 @@ const footerLinks = [
 ]
 
 const toolLinks = [
+  { label: 'Git commit gen', href: '/tools/commit-generator' },
   { label: 'WCAG checker',       href: '/tools/wcag'        },
   { label: 'CSS specificity',    href: '/tools/specificity' },
   { label: 'TanStack generator', href: '/tools/tanstack'    },

@@ -17,6 +17,21 @@ export const toolsData = {
 
 export const toolsList = [
   {
+    id: 'commit-generator',
+    href: '/tools/commit-generator',
+    icon: '📝',
+    iconBg: 'rgba(96,165,250,0.1)',
+    name: 'Git commit generator',
+    sub: 'Describe changes or paste diff · get a conventional commit',
+    desc: 'Stop writing "fix stuff" commits. Describe what you changed in plain English or paste your git diff — get a properly formatted conventional commit message instantly. Editable before you copy.',
+    tags: ['Git', 'Developer tools', 'AI-powered'],
+    pageTitle: 'Git Commit Generator — Free Tool',
+    pageDescription: 'Free AI-powered git commit message generator. Paste your diff or describe what you changed — get a properly formatted conventional commit message instantly.',
+    heroTitle: 'Git commit',
+    heroTitleEm: 'generator.',
+    heroDesc: 'Describe what you changed or paste your git diff. Get a properly formatted conventional commit message — editable before you copy.',
+  },
+  {
     id: 'wcag',
     href: '/tools/wcag',
     icon: '♿',
