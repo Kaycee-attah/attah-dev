@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase'
-const { phase1Questions } = await import('@/lib/data/business-builder')
+import { rateLimit, getClientIp, RATE_LIMITS } from '@/lib/rateLimiter'
+import { phase1Questions } from '@/lib/data/business-builder'
 
 export async function POST(req: NextRequest) {
   try {
@@ -9,7 +10,6 @@ export async function POST(req: NextRequest) {
       userMessage,
       action,
       sessionId,
-      // Lead capture
       name,
       email,
       phone,
@@ -18,7 +18,35 @@ export async function POST(req: NextRequest) {
       results,
     } = await req.json()
 
-    // ── TRACK ANALYTICS EVENT ──────────────────────────────────
+    // ── RATE LIMITING ────────────────────────────────────────────
+    if (action !== 'track' && action !== 'save_lead') {
+      const ip = getClientIp(req)
+      const { allowed, resetAt } = rateLimit(
+        ip,
+        'productiq',
+        RATE_LIMITS.productiq.limit,
+        RATE_LIMITS.productiq.windowMs,
+      )
+
+      if (!allowed) {
+        return NextResponse.json(
+          {
+            error: RATE_LIMITS.productiq.message,
+            resetAt: new Date(resetAt).toISOString(),
+          },
+          {
+            status: 429,
+            headers: {
+              'X-RateLimit-Limit': String(RATE_LIMITS.productiq.limit),
+              'X-RateLimit-Remaining': '0',
+              'X-RateLimit-Reset': new Date(resetAt).toISOString(),
+            },
+          }
+        )
+      }
+    }
+
+    // ── TRACK ANALYTICS EVENT ────────────────────────────────────
     if (action === 'track') {
       const metadata = phase1Answers || {}
       await supabaseAdmin.from('productiq_analytics').insert({
@@ -30,7 +58,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: true }, { status: 200 })
     }
 
-    // ── SAVE LEAD ──────────────────────────────────────────────
+    // ── SAVE LEAD ────────────────────────────────────────────────
     if (action === 'save_lead') {
       const { data, error } = await supabaseAdmin
         .from('productiq_leads')
@@ -51,13 +79,12 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: error.message }, { status: 500 })
       }
 
-      // Send email notification to Attah
       await notifyAttah({ name, email, phone, phase1Answers, phase2Answers, results })
 
       return NextResponse.json({ success: true, lead: data }, { status: 200 })
     }
 
-    // ── GENERATE AI RESPONSE ───────────────────────────────────
+    // ── GENERATE AI RESPONSE ─────────────────────────────────────
     if (!systemPrompt || !userMessage) {
       return NextResponse.json(
         { error: 'systemPrompt and userMessage are required.' },
@@ -125,7 +152,7 @@ export async function POST(req: NextRequest) {
   }
 }
 
-// ── EMAIL NOTIFICATION ─────────────────────────────────────────
+// ── EMAIL NOTIFICATION ────────────────────────────────────────
 async function notifyAttah({
   name,
   email,
@@ -145,36 +172,36 @@ async function notifyAttah({
     const { Resend } = await import('resend')
     const resend = new Resend(process.env.RESEND_API_KEY)
 
-    const getQuestion = (id: string) => 
-    phase1Questions.find(q => q.id === id)?.question || id
+    const getQuestion = (id: string) =>
+      phase1Questions.find((q) => q.id === id)?.question || id
 
     const phase1Html = Object.entries(phase1Answers)
-    .map(([k, v]) => `
-        <tr>
-        <td colspan="2" style="padding:10px 0 3px;font-size:12px;color:#9ca3af;font-style:italic;border-top:0.5px solid #1f2230;">
-            ${getQuestion(k)}
-        </td>
-        </tr>
-        <tr>
-        <td style="padding:0 0 8px;font-size:13px;color:#f59e0b;font-weight:700;">→</td>
-        <td style="padding:0 0 8px;font-size:13px;color:#e5e7eb;">${v}</td>
-        </tr>
-    `)
-    .join('')
-
-    const phase2Html = Object.entries(phase2Answers)
-    .map(([k, v]) => `
+      .map(([k, v]) => `
         <tr>
           <td colspan="2" style="padding:10px 0 3px;font-size:12px;color:#9ca3af;font-style:italic;border-top:0.5px solid #1f2230;">
-              ${k}
+            ${getQuestion(k)}
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:0 0 8px;font-size:13px;color:#f59e0b;font-weight:700;">→</td>
+          <td style="padding:0 0 8px;font-size:13px;color:#e5e7eb;">${v}</td>
+        </tr>
+      `)
+      .join('')
+
+    const phase2Html = Object.entries(phase2Answers)
+      .map(([k, v]) => `
+        <tr>
+          <td colspan="2" style="padding:10px 0 3px;font-size:12px;color:#9ca3af;font-style:italic;border-top:0.5px solid #1f2230;">
+            ${k}
           </td>
         </tr>
         <tr>
           <td style="padding:0 0 8px;font-size:13px;color:#60a5fa;font-weight:700;">→</td>
           <td style="padding:0 0 8px;font-size:13px;color:#e5e7eb;">${v}</td>
         </tr>
-    `)
-    .join('')
+      `)
+      .join('')
 
     const res = results as {
       businessName?: { recommended?: string }
@@ -226,6 +253,5 @@ async function notifyAttah({
     })
   } catch (err) {
     console.error('Failed to send lead notification email:', err)
-    // Don't throw — email failure shouldn't block lead save
   }
 }

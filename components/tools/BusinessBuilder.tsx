@@ -44,11 +44,16 @@ async function callClaude(systemPrompt: string, userMessage: string): Promise<st
     body: JSON.stringify({ systemPrompt, userMessage }),
   })
 
-  if (!response.ok) {
-    throw new Error(`API error: ${response.status}`)
+  const data = await response.json()
+
+  if (response.status === 429) {
+    throw new Error(data.error || 'Too many requests. Please try again in an hour.')
   }
 
-  const data = await response.json()
+  if (!response.ok) {
+    throw new Error(data.error || `Something went wrong. Please try again.`)
+  }
+
   const clean = (data.text || '').replace(/```json|```/g, '').trim()
   return clean
 }
