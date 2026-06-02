@@ -53,6 +53,54 @@ async function callClaude(systemPrompt: string, userMessage: string): Promise<st
   return clean
 }
 
+function getDeviceType(): string {
+  if (typeof window === 'undefined') return 'unknown'
+  const ua = navigator.userAgent
+  if (/tablet|ipad|playbook|silk/i.test(ua)) return 'tablet'
+  if (/mobile|android|iphone|ipod|blackberry|opera mini|iemobile/i.test(ua)) return 'mobile'
+  return 'desktop'
+}
+
+// ── TRACK ANALYTICS ───────────────────────────────────────────
+async function trackEvent(
+  event: string,
+  sessionId: string,
+  metadata?: Record<string, unknown>
+) {
+  try {
+    await fetch('/api/productiq', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'track',
+        userMessage: event,
+        sessionId,
+        phase1Answers: metadata || {},
+      }),
+    })
+  } catch {
+    // Analytics failure should never block the user
+  }
+}
+
+// ── SAVE LEAD ─────────────────────────────────────────────────
+async function saveLead(payload: {
+  name: string
+  email: string
+  phone?: string
+  phase1Answers: Record<string, string>
+  phase2Answers: Record<string, string>
+  results: Record<string, unknown>
+}) {
+  const res = await fetch('/api/productiq', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ action: 'save_lead', ...payload }),
+  })
+  if (!res.ok) throw new Error('Failed to save lead')
+  return res.json()
+}
+
 // ─── SHARED STYLES ────────────────────────────────────────────
 const cardStyle = {
   background: 'var(--bg-surface)',
@@ -78,6 +126,7 @@ export default function BusinessBuilder() {
   const [answers, setAnswers] = useState<Record<string, string>>({})
   const [currentAnswer, setCurrentAnswer] = useState('')
   const [otherText, setOtherText] = useState('')
+  const [leadId, setLeadId] = useState<string | null>(null)
 
   // Phase 2
   const [followUps, setFollowUps] = useState<FollowUpQuestion[]>([])
@@ -97,10 +146,23 @@ export default function BusinessBuilder() {
   const [results, setResults] = useState<Results | null>(null)
   const [error, setError] = useState('')
 
+  // Gate state
+  const [showGate, setShowGate] = useState(false)
+  const [gateName, setGateName] = useState('')
+  const [gateEmail, setGateEmail] = useState('')
+  const [gatePhone, setGatePhone] = useState('')
+  const [gateError, setGateError] = useState('')
+  const [gateSubmitting, setGateSubmitting] = useState(false)
+  const [sessionId] = useState(() => Math.random().toString(36).slice(2))
+
   // Scroll chat to bottom
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [chatMessages, isTyping])
+
+  useEffect(() => {
+    trackEvent('page_view', sessionId)
+  }, [])
 
   // ── PHASE 1 HANDLERS ────────────────────────────────────────
   const currentQuestion = phase1Questions[currentQ]
@@ -119,11 +181,24 @@ export default function BusinessBuilder() {
     setCurrentAnswer('')
     setOtherText('')
 
+    // Track per-question answer
+    trackEvent(
+      `phase1_q${currentQ + 1}_answer` as any,
+      sessionId,
+      { answer: finalAnswer, device: getDeviceType() }
+    )
+
+    if (currentQ === 0) {
+        // First question answered — phase1 started
+        trackEvent('phase1_start', sessionId)
+    }
+
     if (currentQ < phase1Questions.length - 1) {
-      setCurrentQ(currentQ + 1)
+        setCurrentQ(currentQ + 1)
     } else {
-      setPhase('transition')
-      setTimeout(() => startPhase2(newAnswers), 3000)
+        trackEvent('phase1_complete', sessionId)
+        setPhase('transition')
+        setTimeout(() => startPhase2(newAnswers), 3000)
     }
   }
 
@@ -210,16 +285,56 @@ export default function BusinessBuilder() {
   }
 
   const generateResults = async (allAnswers: Record<string, string>) => {
+    trackEvent('phase2_complete', sessionId)
+    // Show gate before generating results
+    setPhase('phase2')
+    setShowGate(true)
+    // Store all answers for after gate submission
+    setFollowUpAnswers(allAnswers)
+    }
+
+    const handleGateSubmit = async () => {
+    if (!gateName.trim() || !gateEmail.trim()) {
+        setGateError('Name and email are required.')
+        return
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(gateEmail)) {
+        setGateError('Please enter a valid email address.')
+        return
+    }
+
+    setGateSubmitting(true)
+    setGateError('')
+    trackEvent('gate_submitted', sessionId)
     setPhase('generating')
+    setShowGate(false)
+
     try {
-      const systemPrompt = resultsSystemPrompt(allAnswers)
-      const raw = await callClaude(systemPrompt, 'Generate the complete product strategy now.')
-      const parsed = JSON.parse(raw)
-      setResults(parsed)
-      setPhase('results')
+        const allAnswers = { ...answers, ...followUpAnswers }
+        const systemPrompt = resultsSystemPrompt(allAnswers)
+        const raw = await callClaude(systemPrompt, 'Generate the complete product strategy now.')
+        const parsed = JSON.parse(raw)
+        setResults(parsed)
+
+        // Save lead to database + send email
+        const savedLead = await saveLead({
+          name: gateName,
+          email: gateEmail,
+          phone: gatePhone || undefined,
+          phase1Answers: answers,
+          phase2Answers: followUpAnswers,
+          results: parsed,
+        })
+        if (savedLead?.lead?.id) setLeadId(savedLead.lead.id)
+
+        trackEvent('results_viewed', sessionId)
+        setPhase('results')
     } catch (e) {
-      setError('Something went wrong generating your strategy. Please try again.')
-      setPhase('phase2')
+        setError('Something went wrong generating your strategy. Please try again.')
+        setPhase('phase2')
+        setShowGate(true)
+    } finally {
+        setGateSubmitting(false)
     }
   }
 
@@ -491,7 +606,93 @@ export default function BusinessBuilder() {
 
       {/* ── PHASE 2 ──────────────────────────────────────────── */}
       {phase === 'phase2' && (
-        <div style={{ padding: '28px 0 80px', display: 'grid', gridTemplateColumns: '1fr 280px', gap: '28px', alignItems: 'start' }} className="builder-grid">
+
+        <>
+            {showGate ? (
+                /* ── GATE — collect contact details ── */
+            <div style={{ padding: '52px 0 80px', maxWidth: '480px', margin: '0 auto' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '10px' }}>
+                <span style={{ width: '32px', height: '1px', background: 'var(--amber)', display: 'inline-block' }} />
+                <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--amber)', letterSpacing: '0.1em', textTransform: 'uppercase' }}>Almost there</span>
+                </div>
+                <h2 style={{ fontSize: 'clamp(24px, 4vw, 36px)', fontWeight: 800, letterSpacing: '-0.025em', color: 'var(--text-primary)', lineHeight: 1.1, marginBottom: '10px' }}>
+                Your strategy is ready.
+                </h2>
+                <p style={{ fontSize: '14px', lineHeight: 1.75, color: 'var(--text-dim)', marginBottom: '28px' }}>
+                Before you see your results, let me know who I'm talking to. I'll reach out personally to walk you through it.
+                </p>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                <div>
+                    <label style={{ display: 'block', fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'var(--text-ghost)', letterSpacing: '0.07em', textTransform: 'uppercase', marginBottom: '6px' }}>
+                    Full name *
+                    </label>
+                    <input
+                    type="text"
+                    value={gateName}
+                    onChange={(e) => setGateName(e.target.value)}
+                    placeholder="Your full name"
+                    style={{ width: '100%', padding: '11px 14px', background: 'var(--bg-surface)', border: '0.5px solid var(--border)', borderRadius: '8px', fontSize: '13px', color: 'var(--text-primary)', fontFamily: 'var(--font-sans)', outline: 'none', boxSizing: 'border-box' }}
+                    />
+                </div>
+
+                <div>
+                    <label style={{ display: 'block', fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'var(--text-ghost)', letterSpacing: '0.07em', textTransform: 'uppercase', marginBottom: '6px' }}>
+                    Email address *
+                    </label>
+                    <input
+                    type="email"
+                    value={gateEmail}
+                    onChange={(e) => setGateEmail(e.target.value)}
+                    placeholder="your@email.com"
+                    style={{ width: '100%', padding: '11px 14px', background: 'var(--bg-surface)', border: '0.5px solid var(--border)', borderRadius: '8px', fontSize: '13px', color: 'var(--text-primary)', fontFamily: 'var(--font-sans)', outline: 'none', boxSizing: 'border-box' }}
+                    />
+                </div>
+
+                <div>
+                    <label style={{ display: 'block', fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'var(--text-ghost)', letterSpacing: '0.07em', textTransform: 'uppercase', marginBottom: '6px' }}>
+                    WhatsApp / Phone <span style={{ color: 'var(--text-whisper)', textTransform: 'none', letterSpacing: 0 }}>— optional</span>
+                    </label>
+                    <input
+                    type="tel"
+                    value={gatePhone}
+                    onChange={(e) => setGatePhone(e.target.value)}
+                    placeholder="+234 800 000 0000"
+                    style={{ width: '100%', padding: '11px 14px', background: 'var(--bg-surface)', border: '0.5px solid var(--border)', borderRadius: '8px', fontSize: '13px', color: 'var(--text-primary)', fontFamily: 'var(--font-sans)', outline: 'none', boxSizing: 'border-box' }}
+                    />
+                </div>
+
+                {gateError && (
+                    <p style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: '#f87171' }}>{gateError}</p>
+                )}
+
+                <button
+                    onClick={handleGateSubmit}
+                    disabled={gateSubmitting}
+                    style={{
+                    padding: '13px',
+                    background: gateSubmitting ? 'var(--bg-elevated)' : 'var(--amber)',
+                    color: gateSubmitting ? 'var(--text-ghost)' : 'var(--bg-base)',
+                    border: 'none',
+                    borderRadius: '8px',
+                    fontSize: '14px',
+                    fontWeight: 700,
+                    cursor: gateSubmitting ? 'not-allowed' : 'pointer',
+                    fontFamily: 'var(--font-sans)',
+                    marginTop: '4px',
+                    }}
+                >
+                    {gateSubmitting ? 'Generating your strategy...' : 'See my strategy →'}
+                </button>
+
+                <p style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'var(--text-whisper)', textAlign: 'center', lineHeight: 1.5 }}>
+                    By continuing you agree that Attah Kelechi may contact you about your product strategy. No spam — ever.
+                </p>
+                </div>
+            </div>
+
+            ) : (
+            <div style={{ padding: '28px 0 80px', display: 'grid', gridTemplateColumns: '1fr 280px', gap: '28px', alignItems: 'start' }} className="builder-grid">
 
           {/* CHAT */}
           <div style={cardStyle}>
@@ -643,7 +844,11 @@ export default function BusinessBuilder() {
               </div>
             </div>
           </div>
-        </div>
+            </div>
+            )
+
+            }
+        </>
       )}
 
       {/* ── GENERATING ───────────────────────────────────────── */}
@@ -778,6 +983,14 @@ export default function BusinessBuilder() {
           <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
             <a
               href="https://calendly.com/attahkelechi97/free-20-min-product-strategy-call"
+              onClick={() => {
+                trackEvent('calendly_click', sessionId)
+                fetch('/api/admin/leads', {
+                  method: 'PATCH',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ id: leadId, calendly_clicked: true }),
+                })
+              }}
                 target="_blank"
                 rel="noopener noreferrer"
               style={{ flex: 1, minWidth: '200px', display: 'block', textAlign: 'center', padding: '14px', background: 'var(--amber)', color: 'var(--bg-base)', borderRadius: '8px', fontSize: '14px', fontWeight: 700, textDecoration: 'none', fontFamily: 'var(--font-sans)' }}

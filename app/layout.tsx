@@ -2,8 +2,6 @@ import type { Metadata } from "next";
 import { Plus_Jakarta_Sans, DM_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
-import Navbar from "@/components/layout/Navbar";
-import Footer from "@/components/layout/Footer";
 
 const plusJakarta = Plus_Jakarta_Sans({
   variable: "--font-sans",
@@ -45,19 +43,15 @@ export default function RootLayout({
       lang="en"
       className={`${plusJakarta.variable} ${dmMono.variable} antialiased`}
     >
-      <body 
+      <body
         style={{
-            minHeight: '100vh',
-            display: 'flex',
-            flexDirection: 'column',
-          }}
+          minHeight: '100vh',
+          display: 'flex',
+          flexDirection: 'column',
+        }}
       >
         <ThemeProvider>
-          <Navbar />
-          <main style={{ flex: 1 }}>
-            {children}
-          </main>
-          <Footer />
+          {children}
         </ThemeProvider>
       </body>
     </html>
