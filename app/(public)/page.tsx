@@ -12,7 +12,7 @@ export default function Home() {
   return (
     <main>
       <Hero />
-       <ProductIQBanner />
+      <ProductIQBanner />
       <About />
       <Projects />
       <Experience />

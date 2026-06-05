@@ -1,30 +1,27 @@
 // ─── TOOLS DATA ───────────────────────────────────────────────
-// All tools content lives here.
-// When Admin panel is built, these will be fetched
-// from the database instead.
-
 import { productIQData } from './business-builder'
 
 export const toolsData = {
   title: 'Built from',
   titleEm: 'real problems.',
   description:
-    'Three tools I built because I needed them myself. Free, no sign-up, no limits. Browser-only — nothing leaves your machine.',
+    'Tools I built because I needed them myself. Free, no sign-up, no limits. Browser-only — nothing leaves your machine.',
   pageTitle: 'Tools',
   pageDescription:
-    'Free developer tools built from real problems. WCAG contrast checker, CSS specificity calculator, TanStack Query hook generator — no sign-up, no limits.',
+    'Free developer tools built from real problems. WCAG contrast checker, CSS specificity calculator, TanStack Query hook generator, Git commit generator — no sign-up, no limits.',
 }
 
 export const toolsList = [
   {
     id: 'commit-generator',
     href: '/tools/commit-generator',
-    icon: '📝',
-    iconBg: 'rgba(96,165,250,0.1)',
+    icon: '⚡',
+    iconBg: 'rgba(245,158,11,0.1)',
     name: 'Git commit generator',
     sub: 'Describe changes or paste diff · get a conventional commit',
-    desc: 'Stop writing "fix stuff" commits. Describe what you changed in plain English or paste your git diff — get a properly formatted conventional commit message instantly. Editable before you copy.',
+    desc: 'Stop writing "fix stuff" commits. Describe what you changed in plain English or paste your git diff — get a properly formatted conventional commit message instantly. Also available as a VSCode extension.',
     tags: ['Git', 'Developer tools', 'AI-powered'],
+    marketplaceUrl: 'https://marketplace.visualstudio.com/items?itemName=attah-kelechi.commit-gen',
     pageTitle: 'Git Commit Generator — Free Tool',
     pageDescription: 'Free AI-powered git commit message generator. Paste your diff or describe what you changed — get a properly formatted conventional commit message instantly.',
     heroTitle: 'Git commit',
@@ -51,7 +48,7 @@ export const toolsList = [
   {
     id: 'specificity',
     href: '/tools/specificity',
-    icon: '⚡',
+    icon: '🎯',
     iconBg: 'rgba(127,119,221,0.1)',
     name: 'CSS specificity calculator',
     sub: 'Paste any selector · instant token breakdown',
@@ -68,7 +65,7 @@ export const toolsList = [
   {
     id: 'tanstack',
     href: '/tools/tanstack',
-    icon: '⚙',
+    icon: '⚙️',
     iconBg: 'rgba(29,158,117,0.1)',
     name: 'TanStack Query hook generator',
     sub: 'Paste endpoint + Swagger JSON · get a typed hook',
@@ -96,5 +93,5 @@ export const toolsList = [
     heroTitle: 'ProductIQ',
     heroTitleEm: 'What should you build?',
     heroDesc: productIQData.description,
- },
+  },
 ]
