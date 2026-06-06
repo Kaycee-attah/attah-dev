@@ -1034,24 +1034,56 @@ export default function ProductIQAdmin() {
                             </select>
                           </td>
                           <td style={{ padding: '10px 14px' }}>
-                            <Link
-                              href={`/admin/productiq/${lead.id}`}
-                              style={{
-                                display: 'inline-flex',
-                                alignItems: 'center',
-                                gap: '4px',
-                                padding: '5px 10px',
-                                background: 'var(--bg-elevated)',
-                                border: '0.5px solid var(--border)',
-                                borderRadius: '6px',
-                                fontSize: '11px',
-                                color: 'var(--text-secondary)',
-                                textDecoration: 'none',
-                                whiteSpace: 'nowrap',
-                              }}
-                            >
-                              View full strategy →
-                            </Link>
+                            <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+                              <Link
+                                href={`/admin/productiq/${lead.id}`}
+                                style={{
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: '4px',
+                                  padding: '5px 10px',
+                                  background: 'var(--bg-elevated)',
+                                  border: '0.5px solid var(--border)',
+                                  borderRadius: '6px',
+                                  fontSize: '11px',
+                                  color: 'var(--text-secondary)',
+                                  textDecoration: 'none',
+                                  whiteSpace: 'nowrap',
+                                }}
+                              >
+                                View →
+                              </Link>
+                              <button
+                                onClick={async () => {
+                                  if (!confirm('Delete this lead permanently? This cannot be undone.')) return
+                                  const t = toast.loading('Deleting lead...')
+                                  const res = await fetch(`/api/admin/leads?id=${lead.id}`, {
+                                    method: 'DELETE',
+                                  })
+                                  if (res.ok) {
+                                    t.success('Lead deleted')
+                                    fetchData()
+                                  } else {
+                                    t.error('Failed to delete lead.')
+                                  }
+                                }}
+                                style={{
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  padding: '5px 10px',
+                                  background: 'transparent',
+                                  border: '0.5px solid rgba(239,68,68,0.2)',
+                                  borderRadius: '6px',
+                                  fontSize: '11px',
+                                  color: '#f87171',
+                                  cursor: 'pointer',
+                                  fontFamily: 'var(--font-sans)',
+                                  whiteSpace: 'nowrap',
+                                }}
+                              >
+                                Delete
+                              </button>
+                            </div>
                           </td>
                         </tr>
                       )
