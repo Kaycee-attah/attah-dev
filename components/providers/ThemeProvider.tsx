@@ -2,7 +2,6 @@
 
 import { createContext, useContext, useEffect, useState } from 'react'
 
-// ─── TYPES ──────────────────────────────────────────────────
 type Theme = 'dark' | 'light'
 
 interface ThemeContextType {
@@ -10,23 +9,19 @@ interface ThemeContextType {
   toggleTheme: () => void
 }
 
-// ─── CONTEXT ────────────────────────────────────────────────
 const ThemeContext = createContext<ThemeContextType>({
   theme: 'dark',
   toggleTheme: () => {},
 })
 
-// ─── PROVIDER COMPONENT ─────────────────────────────────────
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setTheme] = useState<Theme>('dark')
-  const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
     const stored = localStorage.getItem('theme') as Theme | null
     const preferred = stored ?? 'dark'
     setTheme(preferred)
     document.documentElement.classList.toggle('light', preferred === 'light')
-    setMounted(true)
   }, [])
 
   const toggleTheme = () => {
@@ -36,8 +31,6 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     document.documentElement.classList.toggle('light', next === 'light')
   }
 
-  if (!mounted) return null
-
   return (
     <ThemeContext.Provider value={{ theme, toggleTheme }}>
       {children}
@@ -45,6 +38,4 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   )
 }
 
-// ─── HOOK ────────────────────────────────────────────────────
 export const useTheme = () => useContext(ThemeContext)
-
