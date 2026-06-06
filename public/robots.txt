@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://attah-dev.vercel.app/sitemap.xml

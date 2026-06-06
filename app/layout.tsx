@@ -18,8 +18,8 @@ const dmMono = DM_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "Attah Kelechi — Frontend Developer",
-    template: "%s | Attah Kelechi",
+    default: 'Attah Kelechi — Frontend Developer',
+    template: '%s | Attah Kelechi',
   },
   description:
     "Frontend Developer building production-grade web applications and APIs. Computer Engineering finalist at Redeemer's University. First Class, 4.79 GPA.",
@@ -29,15 +29,40 @@ export const metadata: Metadata = {
     apple: '/favicon.svg',
   },
   keywords: [
-    "Frontend Developer",
-    "React Developer Nigeria",
-    "Next.js Developer",
-    "TypeScript",
-    "Attah Kelechi",
+    'Frontend Developer',
+    'React Developer Nigeria',
+    'Next.js Developer',
+    'TypeScript',
+    'Attah Kelechi',
+    'Lagos Developer',
+    'Nigerian Developer',
   ],
-  authors: [{ name: "Attah Kelechi" }],
-  creator: "Attah Kelechi",
-};
+  authors: [{ name: 'Attah Kelechi' }],
+  creator: 'Attah Kelechi',
+  metadataBase: new URL('https://attah-dev.vercel.app'),
+  openGraph: {
+    type: 'website',
+    locale: 'en_US',
+    url: 'https://attah-dev.vercel.app',
+    siteName: 'Attah Kelechi',
+    title: 'Attah Kelechi — Frontend Developer',
+    description: 'Frontend Developer building production-grade web applications. Based in Nigeria.',
+    images: [
+      {
+        url: '/og-image.png',
+        width: 1200,
+        height: 630,
+        alt: 'Attah Kelechi — Frontend Developer',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Attah Kelechi — Frontend Developer',
+    description: 'Frontend Developer building production-grade web applications. Based in Nigeria.',
+    images: ['/og-image.png'],
+  },
+}
 
 export default function RootLayout({
   children,
