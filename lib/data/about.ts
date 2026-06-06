@@ -183,19 +183,23 @@ export const aboutPageStats = [
 ]
 
 export const coreStack = [
-  { label: 'React',      active: true  },
-  { label: 'Next.js 14', active: true  },
-  { label: 'TypeScript', active: true  },
-  { label: 'Vue 3',      active: false },
-  { label: 'Node.js',    active: false },
-  { label: 'PostgreSQL', active: false },
-  { label: 'Three.js',   active: false },
-  { label: 'TanStack',   active: false },
+  { label: 'React',       active: true  },
+  { label: 'Next.js',     active: true  },
+  { label: 'TypeScript',  active: true  },
+  { label: 'Supabase',    active: true  },
+  { label: 'Tailwind',    active: true  },
+  { label: 'Groq AI',     active: true  },
+  { label: 'Vue 3',       active: false },
+  { label: 'Node.js',     active: false },
+  { label: 'PostgreSQL',  active: false },
+  { label: 'Three.js',    active: false },
+  { label: 'TanStack',    active: false },
+  { label: 'Vercel',      active: false },
 ]
 
 export const about_page_currentStatus = [
-  'Frontend Engineer · Oneflare',
-  'HNG 2026 — Frontend + Backend',
-  "Final year · Redeemer's Uni",
-  'Open to full-time · NYSC PPA',
+  'Frontend Engineer · Oneflare Technologies',
+  'Building attah.dev — portfolio + tools',
+  "Final year · Redeemer's University, CPE",
+  'Open to full-time · NYSC PPA · Freelance',
 ]

@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { Toast, useToast } from '@/components/admin/Toast'
+import { Toast, useToast, ConfirmModal } from '@/components/admin/Toast'
 
 interface Project {
   id: string
@@ -41,7 +41,12 @@ export default function AdminProjects() {
   const [loading, setLoading] = useState(true)
   const [editing, setEditing] = useState<Partial<Project> | null>(null)
   const [saving, setSaving] = useState(false)
-  const [deleting, setDeleting] = useState<string | null>(null)
+  const [deleting, setDeleting] = useState(false)
+  const [deleteModal, setDeleteModal] = useState<{ open: boolean; id: string | null; title: string }>({
+    open: false,
+    id: null,
+    title: '',
+  })
   const { toasts, removeToast, toast } = useToast()
 
   const fetchProjects = async () => {
@@ -54,45 +59,44 @@ export default function AdminProjects() {
 
   useEffect(() => { fetchProjects() }, [])
 
- const handleSave = async () => {
-  if (!editing) return
-  setSaving(true)
-  const t = toast.loading(editing.id ? 'Saving project...' : 'Adding project...')
+  const handleSave = async () => {
+    if (!editing) return
+    setSaving(true)
+    const t = toast.loading(editing.id ? 'Saving project...' : 'Adding project...')
 
-  const method = editing.id ? 'PATCH' : 'POST'
-  const body = editing.id ? editing : { ...EMPTY_PROJECT, ...editing }
+    const method = editing.id ? 'PATCH' : 'POST'
+    const body = editing.id ? editing : { ...EMPTY_PROJECT, ...editing }
 
-  const res = await fetch('/api/admin/projects', {
-    method,
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
-  })
-
-  if (res.ok) {
-    t.success(editing.id ? 'Project updated successfully' : 'Project added successfully')
-    await fetchProjects()
-    setEditing(null)
-  } else {
-    t.error('Failed to save project. Please try again.')
-  }
-  setSaving(false)
- }
-
-    const handleDelete = async (id: string) => {
-    if (!confirm('Delete this project? This cannot be undone.')) return
-    setDeleting(id)
-    const t = toast.loading('Deleting project...')
-
-    const res = await fetch(`/api/admin/projects?id=${id}`, { method: 'DELETE' })
+    const res = await fetch('/api/admin/projects', {
+      method,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    })
 
     if (res.ok) {
-        t.success('Project deleted')
-        await fetchProjects()
+      t.success(editing.id ? 'Project updated successfully' : 'Project added successfully')
+      await fetchProjects()
+      setEditing(null)
     } else {
-        t.error('Failed to delete project.')
+      t.error('Failed to save project. Please try again.')
     }
-    setDeleting(null)
+    setSaving(false)
+  }
+
+  const handleDelete = async () => {
+    if (!deleteModal.id) return
+    setDeleting(true)
+    const t = toast.loading('Deleting project...')
+    const res = await fetch(`/api/admin/projects?id=${deleteModal.id}`, { method: 'DELETE' })
+    if (res.ok) {
+      t.success('Project deleted')
+      setDeleteModal({ open: false, id: null, title: '' })
+      await fetchProjects()
+    } else {
+      t.error('Failed to delete project.')
     }
+    setDeleting(false)
+  }
 
   const handleLogout = async () => {
     await fetch('/api/admin/logout', { method: 'POST' })
@@ -139,7 +143,7 @@ export default function AdminProjects() {
             { label: 'Blog', href: '/admin/blog', icon: '✍️' },
             { label: 'Services', href: '/admin/services', icon: '🔧' },
           ].map((item) => (
-            <Link key={item.href} href={item.href} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 10px', borderRadius: '7px', fontSize: '13px', color: item.active ? 'var(--text-primary)' : 'var(--text-dim)', background: item.active ? 'var(--bg-elevated)' : 'transparent', textDecoration: 'none', fontWeight: item.active ? 500 : 400, marginBottom: '1px' }}>
+            <Link key={item.href} href={item.href} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 10px', borderRadius: '7px', fontSize: '13px', color: (item as any).active ? 'var(--text-primary)' : 'var(--text-dim)', background: (item as any).active ? 'var(--bg-elevated)' : 'transparent', textDecoration: 'none', fontWeight: (item as any).active ? 500 : 400, marginBottom: '1px' }}>
               <span>{item.icon}</span>{item.label}
             </Link>
           ))}
@@ -186,8 +190,11 @@ export default function AdminProjects() {
                   </div>
                   <div style={{ display: 'flex', gap: '6px', flexShrink: 0 }}>
                     <button onClick={() => setEditing(project)} style={{ padding: '6px 12px', background: 'var(--bg-elevated)', border: '0.5px solid var(--border)', borderRadius: '6px', fontSize: '11px', color: 'var(--text-secondary)', cursor: 'pointer', fontFamily: 'var(--font-sans)' }}>Edit</button>
-                    <button onClick={() => handleDelete(project.id)} disabled={deleting === project.id} style={{ padding: '6px 12px', background: 'transparent', border: '0.5px solid rgba(239,68,68,0.2)', borderRadius: '6px', fontSize: '11px', color: '#f87171', cursor: 'pointer', fontFamily: 'var(--font-sans)' }}>
-                      {deleting === project.id ? '...' : 'Delete'}
+                    <button
+                      onClick={() => setDeleteModal({ open: true, id: project.id, title: project.title })}
+                      style={{ padding: '6px 12px', background: 'transparent', border: '0.5px solid rgba(239,68,68,0.2)', borderRadius: '6px', fontSize: '11px', color: '#f87171', cursor: 'pointer', fontFamily: 'var(--font-sans)' }}
+                    >
+                      Delete
                     </button>
                   </div>
                 </div>
@@ -205,7 +212,6 @@ export default function AdminProjects() {
               <div style={{ fontSize: '15px', fontWeight: 600, color: 'var(--text-primary)' }}>{editing.id ? 'Edit project' : 'Add project'}</div>
               <button onClick={() => setEditing(null)} style={{ background: 'none', border: 'none', color: 'var(--text-ghost)', cursor: 'pointer', fontSize: '18px' }}>×</button>
             </div>
-
             <div style={{ padding: '20px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '14px' }}>
               <div>
                 <label style={labelStyle}>Title *</label>
@@ -264,7 +270,6 @@ export default function AdminProjects() {
                 Featured on homepage
               </label>
             </div>
-
             <div style={{ padding: '14px 20px', borderTop: '0.5px solid var(--border)', display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
               <button onClick={() => setEditing(null)} style={{ padding: '9px 18px', background: 'transparent', border: '0.5px solid var(--border)', borderRadius: '7px', fontSize: '13px', color: 'var(--text-dim)', cursor: 'pointer', fontFamily: 'var(--font-sans)' }}>Cancel</button>
               <button onClick={handleSave} disabled={saving} style={{ padding: '9px 18px', background: 'var(--amber)', color: 'var(--bg-base)', border: 'none', borderRadius: '7px', fontSize: '13px', fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--font-sans)' }}>
@@ -275,6 +280,15 @@ export default function AdminProjects() {
         </div>
       )}
 
+      <ConfirmModal
+        isOpen={deleteModal.open}
+        title="Delete project"
+        message={`Are you sure you want to delete "${deleteModal.title}"? This cannot be undone.`}
+        confirmLabel="Delete project"
+        loading={deleting}
+        onConfirm={handleDelete}
+        onCancel={() => setDeleteModal({ open: false, id: null, title: '' })}
+      />
       <Toast toasts={toasts} removeToast={removeToast} />
     </div>
   )

@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import dynamic from 'next/dynamic'
-import { Toast, useToast } from '@/components/admin/Toast'
+import { Toast, useToast, ConfirmModal } from '@/components/admin/Toast'
 
 const MDEditor = dynamic(() => import('@uiw/react-md-editor'), { ssr: false })
 
@@ -51,7 +51,12 @@ export default function AdminBlog() {
   const [editing, setEditing] = useState<Partial<BlogPost> | null>(null)
   const [saving, setSaving] = useState(false)
   const [statusFilter, setStatusFilter] = useState('all')
-  const [deleting, setDeleting] = useState<string | null>(null)
+  const [deleting, setDeleting] = useState(false)
+  const [deleteModal, setDeleteModal] = useState<{ open: boolean; id: string | null; title: string }>({
+    open: false,
+    id: null,
+    title: '',
+  })
   const [preview, setPreview] = useState(false)
   const { toasts, removeToast, toast } = useToast()
 
@@ -76,42 +81,41 @@ export default function AdminBlog() {
     const t = toast.loading(publish ? 'Publishing post...' : 'Saving draft...')
 
     const payload = {
-        ...editing,
-        status: publish ? 'published' : (editing.status || 'draft'),
+      ...editing,
+      status: publish ? 'published' : (editing.status || 'draft'),
     }
 
     const method = editing.id ? 'PATCH' : 'POST'
     const res = await fetch('/api/admin/blog', {
-        method,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
+      method,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
     })
 
     if (res.ok) {
-        t.success(publish ? 'Post published successfully' : 'Draft saved')
-        await fetchPosts()
-        setEditing(null)
-        setPreview(false)
+      t.success(publish ? 'Post published successfully' : 'Draft saved')
+      await fetchPosts()
+      setEditing(null)
+      setPreview(false)
     } else {
-        t.error('Failed to save post. Please try again.')
+      t.error('Failed to save post. Please try again.')
     }
     setSaving(false)
   }
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('Delete this post? This cannot be undone.')) return
-    setDeleting(id)
+  const handleDelete = async () => {
+    if (!deleteModal.id) return
+    setDeleting(true)
     const t = toast.loading('Deleting post...')
-
-    const res = await fetch(`/api/admin/blog?id=${id}`, { method: 'DELETE' })
-
+    const res = await fetch(`/api/admin/blog?id=${deleteModal.id}`, { method: 'DELETE' })
     if (res.ok) {
-        t.success('Post deleted')
-        await fetchPosts()
+      t.success('Post deleted')
+      setDeleteModal({ open: false, id: null, title: '' })
+      await fetchPosts()
     } else {
-        t.error('Failed to delete post.')
+      t.error('Failed to delete post.')
     }
-    setDeleting(null)
+    setDeleting(false)
   }
 
   const inputStyle = {
@@ -283,11 +287,10 @@ export default function AdminBlog() {
                       Edit
                     </button>
                     <button
-                      onClick={() => handleDelete(post.id)}
-                      disabled={deleting === post.id}
+                      onClick={() => setDeleteModal({ open: true, id: post.id, title: post.title || 'Untitled' })}
                       style={{ padding: '5px 10px', background: 'transparent', border: '0.5px solid rgba(239,68,68,0.2)', borderRadius: '5px', fontSize: '11px', color: '#f87171', cursor: 'pointer', fontFamily: 'var(--font-sans)' }}
                     >
-                      {deleting === post.id ? '...' : 'Delete'}
+                      Delete
                     </button>
                   </div>
                 </div>
@@ -300,8 +303,6 @@ export default function AdminBlog() {
       {/* EDITOR MODAL */}
       {editing && (
         <div style={{ position: 'fixed', inset: 0, background: 'var(--bg-base)', zIndex: 50, display: 'flex', flexDirection: 'column' }}>
-
-          {/* EDITOR TOPBAR */}
           <div style={{ padding: '12px 20px', borderBottom: '0.5px solid var(--border)', background: 'var(--bg-surface)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
             <button onClick={() => { setEditing(null); setPreview(false) }} style={{ background: 'none', border: 'none', color: 'var(--text-ghost)', cursor: 'pointer', fontSize: '13px', fontFamily: 'var(--font-sans)', display: 'flex', alignItems: 'center', gap: '6px' }}>
               ← Back
@@ -343,61 +344,29 @@ export default function AdminBlog() {
           </div>
 
           <div style={{ flex: 1, overflow: 'hidden', display: 'flex' }}>
-
-            {/* LEFT — META */}
             <div style={{ width: '260px', borderRight: '0.5px solid var(--border)', padding: '20px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '14px', flexShrink: 0 }}>
               <div>
                 <label style={labelStyle}>Slug</label>
-                <input
-                  style={inputStyle}
-                  value={editing.slug || ''}
-                  onChange={(e) => setEditing({ ...editing, slug: e.target.value })}
-                  placeholder="post-url-slug"
-                />
+                <input style={inputStyle} value={editing.slug || ''} onChange={(e) => setEditing({ ...editing, slug: e.target.value })} placeholder="post-url-slug" />
               </div>
               <div>
                 <label style={labelStyle}>Excerpt</label>
-                <textarea
-                  rows={3}
-                  style={{ ...inputStyle, resize: 'none' }}
-                  value={editing.excerpt || ''}
-                  onChange={(e) => setEditing({ ...editing, excerpt: e.target.value })}
-                  placeholder="Short description shown in listings..."
-                />
+                <textarea rows={3} style={{ ...inputStyle, resize: 'none' }} value={editing.excerpt || ''} onChange={(e) => setEditing({ ...editing, excerpt: e.target.value })} placeholder="Short description shown in listings..." />
               </div>
               <div>
                 <label style={labelStyle}>Tags (comma separated)</label>
-                <input
-                  style={inputStyle}
-                  value={(editing.tags || []).join(', ')}
-                  onChange={(e) => setEditing({ ...editing, tags: e.target.value.split(',').map(s => s.trim()).filter(Boolean) })}
-                  placeholder="React, TypeScript, Next.js"
-                />
+                <input style={inputStyle} value={(editing.tags || []).join(', ')} onChange={(e) => setEditing({ ...editing, tags: e.target.value.split(',').map(s => s.trim()).filter(Boolean) })} placeholder="React, TypeScript, Next.js" />
               </div>
               <div>
                 <label style={labelStyle}>Read time (minutes)</label>
-                <input
-                  type="number"
-                  style={inputStyle}
-                  value={editing.read_time || 5}
-                  onChange={(e) => setEditing({ ...editing, read_time: parseInt(e.target.value) })}
-                />
+                <input type="number" style={inputStyle} value={editing.read_time || 5} onChange={(e) => setEditing({ ...editing, read_time: parseInt(e.target.value) })} />
               </div>
               <div>
                 <label style={labelStyle}>Cover image URL</label>
-                <input
-                  style={inputStyle}
-                  value={editing.cover_image || ''}
-                  onChange={(e) => setEditing({ ...editing, cover_image: e.target.value })}
-                  placeholder="https://..."
-                />
+                <input style={inputStyle} value={editing.cover_image || ''} onChange={(e) => setEditing({ ...editing, cover_image: e.target.value })} placeholder="https://..." />
               </div>
               <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: 'var(--text-dim)', cursor: 'pointer' }}>
-                <input
-                  type="checkbox"
-                  checked={editing.featured || false}
-                  onChange={(e) => setEditing({ ...editing, featured: e.target.checked })}
-                />
+                <input type="checkbox" checked={editing.featured || false} onChange={(e) => setEditing({ ...editing, featured: e.target.checked })} />
                 Featured post
               </label>
               <div style={{ padding: '10px 12px', background: 'var(--bg-elevated)', border: '0.5px solid var(--border)', borderRadius: '7px' }}>
@@ -408,7 +377,6 @@ export default function AdminBlog() {
               </div>
             </div>
 
-            {/* RIGHT — EDITOR */}
             <div style={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column' }} data-color-mode="dark">
               <MDEditor
                 value={editing.content || ''}
@@ -422,6 +390,15 @@ export default function AdminBlog() {
         </div>
       )}
 
+      <ConfirmModal
+        isOpen={deleteModal.open}
+        title="Delete post"
+        message={`Are you sure you want to delete "${deleteModal.title}"? This cannot be undone.`}
+        confirmLabel="Delete post"
+        loading={deleting}
+        onConfirm={handleDelete}
+        onCancel={() => setDeleteModal({ open: false, id: null, title: '' })}
+      />
       <Toast toasts={toasts} removeToast={removeToast} />
     </div>
   )
