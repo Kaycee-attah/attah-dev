@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { phase1Questions } from '@/lib/data/business-builder'
-import { Toast, useToast } from '@/components/admin/Toast'
+import { Toast, useToast, ConfirmModal } from '@/components/admin/Toast'
 
 interface Lead {
   id: string
@@ -56,6 +56,12 @@ export default function ProductIQAdmin() {
   const [loading, setLoading] = useState(true)
   const [total, setTotal] = useState(0)
   const { toasts, removeToast, toast } = useToast()
+  const [deleteModal, setDeleteModal] = useState<{ open: boolean; leadId: string | null; leadName: string }>({
+    open: false,
+    leadId: null,
+    leadName: '',
+  })
+  const [deleting, setDeleting] = useState(false)
 
   const fetchData = useCallback(async () => {
     setLoading(true)
@@ -106,6 +112,23 @@ export default function ProductIQAdmin() {
     } else {
       t.error('Failed to update status.')
     }
+  }
+
+  const handleDelete = async () => {
+    if (!deleteModal.leadId) return
+    setDeleting(true)
+    const t = toast.loading('Deleting lead...')
+    const res = await fetch(`/api/admin/leads?id=${deleteModal.leadId}`, {
+      method: 'DELETE',
+    })
+    if (res.ok) {
+      t.success('Lead deleted')
+      setDeleteModal({ open: false, leadId: null, leadName: '' })
+      fetchData()
+    } else {
+      t.error('Failed to delete lead.')
+    }
+    setDeleting(false)
   }
 
   const funnelSteps = analytics ? [
@@ -1054,35 +1077,27 @@ export default function ProductIQAdmin() {
                                 View →
                               </Link>
                               <button
-                                onClick={async () => {
-                                  if (!confirm('Delete this lead permanently? This cannot be undone.')) return
-                                  const t = toast.loading('Deleting lead...')
-                                  const res = await fetch(`/api/admin/leads?id=${lead.id}`, {
-                                    method: 'DELETE',
-                                  })
-                                  if (res.ok) {
-                                    t.success('Lead deleted')
-                                    fetchData()
-                                  } else {
-                                    t.error('Failed to delete lead.')
-                                  }
-                                }}
-                                style={{
-                                  display: 'inline-flex',
-                                  alignItems: 'center',
-                                  padding: '5px 10px',
-                                  background: 'transparent',
-                                  border: '0.5px solid rgba(239,68,68,0.2)',
-                                  borderRadius: '6px',
-                                  fontSize: '11px',
-                                  color: '#f87171',
-                                  cursor: 'pointer',
-                                  fontFamily: 'var(--font-sans)',
-                                  whiteSpace: 'nowrap',
-                                }}
-                              >
-                                Delete
-                              </button>
+                              onClick={() => setDeleteModal({
+                                open: true,
+                                leadId: lead.id,
+                                leadName: lead.name,
+                              })}
+                              style={{
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                padding: '5px 10px',
+                                background: 'transparent',
+                                border: '0.5px solid rgba(239,68,68,0.2)',
+                                borderRadius: '6px',
+                                fontSize: '11px',
+                                color: '#f87171',
+                                cursor: 'pointer',
+                                fontFamily: 'var(--font-sans)',
+                                whiteSpace: 'nowrap',
+                              }}
+                            >
+                              Delete
+                            </button>
                             </div>
                           </td>
                         </tr>
@@ -1096,6 +1111,16 @@ export default function ProductIQAdmin() {
 
         </div>
       </div>
+
+      <ConfirmModal
+        isOpen={deleteModal.open}
+        title="Delete lead"
+        message={`Are you sure you want to delete ${deleteModal.leadName}'s lead? This will permanently remove their strategy, answers, and contact details.`}
+        confirmLabel="Delete lead"
+        loading={deleting}
+        onConfirm={handleDelete}
+        onCancel={() => setDeleteModal({ open: false, leadId: null, leadName: '' })}
+      />
 
       <Toast toasts={toasts} removeToast={removeToast} />
     </div>
