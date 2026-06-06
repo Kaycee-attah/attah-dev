@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Plus_Jakarta_Sans, DM_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
+import AnalyticsTracker from '@/components/analytics/AnalyticsTracker'
 
 const plusJakarta = Plus_Jakarta_Sans({
   variable: "--font-sans",
@@ -56,6 +57,7 @@ export default function RootLayout({
         }}
       >
         <ThemeProvider>
+          <AnalyticsTracker />
           {children}
         </ThemeProvider>
       </body>
