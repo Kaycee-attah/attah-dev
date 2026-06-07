@@ -52,13 +52,15 @@ export default function AdminBlog() {
   const [saving, setSaving] = useState(false)
   const [statusFilter, setStatusFilter] = useState('all')
   const [deleting, setDeleting] = useState(false)
-  const [deleteModal, setDeleteModal] = useState<{ open: boolean; id: string | null; title: string }>({
+  const [deleteModal, setDeleteModal] = useState<{ open: boolean; id: string | null; title: string }
+  >({
     open: false,
     id: null,
     title: '',
   })
   const [preview, setPreview] = useState(false)
   const { toasts, removeToast, toast } = useToast()
+  const [uploading, setUploading] = useState(false)
 
   const fetchPosts = async () => {
     setLoading(true)
@@ -362,8 +364,84 @@ export default function AdminBlog() {
                 <input type="number" style={inputStyle} value={editing.read_time || 5} onChange={(e) => setEditing({ ...editing, read_time: parseInt(e.target.value) })} />
               </div>
               <div>
-                <label style={labelStyle}>Cover image URL</label>
-                <input style={inputStyle} value={editing.cover_image || ''} onChange={(e) => setEditing({ ...editing, cover_image: e.target.value })} placeholder="https://..." />
+                <label style={labelStyle}>Cover image</label>
+
+                {/* UPLOAD BUTTON */}
+                <div style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
+                  <input
+                    style={{ ...inputStyle, flex: 1 }}
+                    value={editing.cover_image || ''}
+                    onChange={(e) => setEditing({ ...editing, cover_image: e.target.value })}
+                    placeholder="Paste URL or upload below..."
+                  />
+                </div>
+
+                {/* FILE UPLOAD */}
+                <label
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '8px',
+                    padding: '8px 12px',
+                    background: uploading ? 'var(--bg-elevated)' : 'transparent',
+                    border: '0.5px dashed var(--border)',
+                    borderRadius: '7px',
+                    fontSize: '12px',
+                    color: uploading ? 'var(--text-ghost)' : 'var(--amber)',
+                    cursor: uploading ? 'not-allowed' : 'pointer',
+                    fontFamily: 'var(--font-sans)',
+                    marginBottom: '8px',
+                    transition: 'all 0.2s ease',
+                  }}
+                >
+                  <input
+                    type="file"
+                    accept="image/*"
+                    style={{ display: 'none' }}
+                    disabled={uploading}
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0]
+                      if (!file) return
+                      setUploading(true)
+                      const uploadToast = toast.loading('Uploading image...')
+                      try {
+                        const form = new FormData()
+                        form.append('file', file)
+                        const res = await fetch('/api/admin/upload', {
+                          method: 'POST',
+                          body: form,
+                        })
+                        const data = await res.json()
+                        if (!res.ok) throw new Error(data.error)
+                        setEditing({ ...editing, cover_image: data.url })
+                        uploadToast.success('Image uploaded!')
+                      } catch (err) {
+                        uploadToast.error('Upload failed. Try again.')
+                      } finally {
+                        setUploading(false)
+                      }
+                    }}
+                  />
+                  {uploading ? '⟳ Uploading...' : '↑ Upload image'}
+                </label>
+
+                {/* LIVE PREVIEW */}
+                {editing.cover_image && (
+                  <div style={{ borderRadius: '6px', overflow: 'hidden', border: '0.5px solid var(--border)', marginBottom: '4px' }}>
+                    <div style={{ fontFamily: 'var(--font-mono)', fontSize: '9px', color: 'var(--text-ghost)', padding: '4px 8px', background: 'var(--bg-elevated)', borderBottom: '0.5px solid var(--border)', letterSpacing: '0.05em', textTransform: 'uppercase' }}>
+                      Card preview
+                    </div>
+                    <div style={{ aspectRatio: '1200/630', overflow: 'hidden' }}>
+                      <img
+                        src={editing.cover_image}
+                        alt="Cover preview"
+                        style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center' }}
+                        onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
+                      />
+                    </div>
+                  </div>
+                )}
               </div>
               <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: 'var(--text-dim)', cursor: 'pointer' }}>
                 <input type="checkbox" checked={editing.featured || false} onChange={(e) => setEditing({ ...editing, featured: e.target.checked })} />
