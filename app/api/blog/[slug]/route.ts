@@ -11,7 +11,7 @@ export async function GET(
     .from('blog_posts')
     .select('*')
     .eq('slug', slug)
-    .eq('status', 'published')
+    
     .limit(1)
 
   if (error || !data || data.length === 0) {
