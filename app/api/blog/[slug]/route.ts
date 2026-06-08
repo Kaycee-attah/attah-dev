@@ -8,16 +8,15 @@ export async function GET(
   const { slug } = await params
 
   const { data, error } = await supabaseAdmin
-  .from('blog_posts')
-  .select('*')
-  .eq('slug', slug)
-  .eq('status', 'published')
-  .limit(1)
+    .from('blog_posts')
+    .select('*')
+    .eq('slug', slug)
+    .eq('status', 'published')
+    .limit(1)
 
+  if (error || !data || data.length === 0) {
+    return NextResponse.json({ error: 'Post not found' }, { status: 404 })
+  }
 
-if (error || !data || data.length === 0) {
-  return NextResponse.json({ error: 'Post not found', debug: { error: error?.message } }, { status: 404 })
-}
-
-return NextResponse.json({ posts: data })
+  return NextResponse.json({ post: data[0] })
 }
