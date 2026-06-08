@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { supabaseAdmin } from '@/lib/supabase'
+import { supabase } from '@/lib/supabase'
 
 export async function GET(
   req: NextRequest,
@@ -7,7 +7,7 @@ export async function GET(
 ) {
   const { slug } = await params
 
-  const { data, error } = await supabaseAdmin
+  const { data, error } = await supabase
     .from('blog_posts')
     .select('*')
     .eq('slug', slug)
