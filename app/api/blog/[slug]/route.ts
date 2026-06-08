@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { supabase } from '@/lib/supabase'
+import { supabaseAdmin } from '@/lib/supabase'
 
 export async function GET(
   req: NextRequest,
@@ -7,11 +7,13 @@ export async function GET(
 ) {
   const { slug } = await params
 
-  const { data, error } = await supabase
+  const { data, error } = await supabaseAdmin
   .from('blog_posts')
-  .select('id, title, slug, status')
+  .select('*')
+  .eq('slug', slug)
+  .eq('status', 'published')
+  .limit(1)
 
-console.log('All posts:', { count: data?.length, posts: data, error: error?.message })
 
 if (error || !data || data.length === 0) {
   return NextResponse.json({ error: 'Post not found', debug: { error: error?.message } }, { status: 404 })
